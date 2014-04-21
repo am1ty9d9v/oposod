@@ -1,0 +1,223 @@
+{% extends "users/base.html" %}
+{% load bootstrap_toolkit %}
+
+{% load url from future %}
+{% block content %}
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+		
+<script src="{{STATIC_URL}}js/jquery.dd.min.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}styles/dd.css" />
+<script language="javascript"> $(document).ready(function(e) {try {$("body select").msDropDown(); } catch(e) {alert(e.message); } }); </script> 
+
+<script> $(function() {$( "#datepicker" ).datepicker({changeMonth: true, changeYear: true, maxDate: "+0D", yearRange: "{{year_of_birth}}:{% now "Y" %}", dateFormat: "yy-mm-dd"}); });</script>
+
+<style type="text/css">
+	#writes_story_form {width: 700px; margin: 0 auto; } #writes_story_form textarea {width: 589px; height: 200px; font-size: 30px; font-family: 'Alegreya', serif; padding: 10px; line-height: 1.2em; border: 10px solid #ddd; margin-top: 10px; } #writes_story_form input[type=text]#id_heading {font-size: 20px; height: 20px; font-family: 'Ubuntu', serif; padding: 10px; border: 10px solid #ddd; } #writes_story_form ul.errorlist li {margin-top: 20px; margin-bottom: 20px; } input[type=text]#datepicker {width: 60px; font-size: 11px; height: 10px; margin-top: -5px; } #save_story {float: right; } button#save_story {width: 100px; } #xx {margin-left: 250px; margin-top: -20px; } 
+</style>
+
+<iframe  height="500px" width="100%" id="upload_frame" name="upload_frame" src="{% url 'upload_new_story' %}" scrolling="no"></iframe>
+
+<div class="myform" id="draggable" >
+	<div id="up-pr"></div>
+	<form id='writes_story_form' action="{% url 'write_story' %}" method="post">
+		{% csrf_token %}
+		{{write_story_form.as_p}}
+		<div style="height:45px;width:609px;border-radius:4px;margin:0 auto;margin-left:-0px;border:10px solid #ddd;background:#fff;">
+			<div title="Hold and drag me" style="cursor:pointer;width: 300px;float:left;clear:both;">
+				<span style="width:60px;float:left;clear:both;margin-top:12px;margin-left:10px;">
+					<input type="text" id="datepicker" name="datepicker" placeholder="Select date"/>
+				</span>
+
+				<span style="width:200px;float:right;margin-top:12px;">
+					<span style="width: 80px;float:left;clear:both;"> :Public <input id="public" name="public" type="radio" checked="checked" value="1"/></span>
+					
+					<span style="width:80px;float:right;"> :Private <input  name="public" type="radio" value="0"/></span>
+				</span>
+			</div>
+			<div style="width:300px;float:right;;margin-top:3px;">
+				<select name="moods" style="float:left;width:150px;clear:both">
+					<option value="">Choose Mood</option> <option value="">-----------------</option> <option value="Attitude" data-image="{{STATIC_URL}}images/moods_30x30/Attitude.png">Attitude</option> <option value="Awesome" data-image="{{STATIC_URL}}images/moods_30x30/Awesome.png">Awesome</option> <option value="Embarressed" data-image="{{STATIC_URL}}images/moods_30x30/Embarressed.png">Embarressed</option> <option value="Ewww" data-image="{{STATIC_URL}}images/moods_30x30/Ewww.png">Ewww</option> <option value="Flirtatious" data-image="{{STATIC_URL}}images/moods_30x30/Flirtatious.png">Flirtatious</option> <option value="Foodie" data-image="{{STATIC_URL}}images/moods_30x30/Foodie.png">Foodie</option> <option value="High" data-image="{{STATIC_URL}}images/moods_30x30/High.png">High</option> <option value="In_Love" data-image="{{STATIC_URL}}images/moods_30x30/In_Love.png">In Love</option> <option value="LOL" data-image="{{STATIC_URL}}images/moods_30x30/LOL.png">LOL</option> <option value="Muaaaaah" data-image="{{STATIC_URL}}images/moods_30x30/Muaaaaah.png">Muaaaaah</option> <option value="Naughty" data-image="{{STATIC_URL}}images/moods_30x30/Naughty.png">Naughty</option> <option value="OMG" data-image="{{STATIC_URL}}images/moods_30x30/OMG.png">OMG</option> <option value="Oopss" data-image="{{STATIC_URL}}images/moods_30x30/Oopss.png">Oopss</option> <option value="Pissed" data-image="{{STATIC_URL}}images/moods_30x30/Pissed.png">Pissed</option> <option value="Tipsy" data-image="{{STATIC_URL}}images/moods_30x30/Tipsy.png">Tipsy</option> <option value="Upset" data-image="{{STATIC_URL}}images/moods_30x30/Upset.png">Upset</option> <option value="Winky" data-image="{{STATIC_URL}}images/moods_30x30/Winky.png">Winky</option> <option value="WTF" data-image="{{STATIC_URL}}images/moods_30x30/WTF.png">WTF</option>
+				</select>
+
+				<button style="width:100px;float:right;;margin-top:4px;margin-right:4px;" class="btn primary" id="save_story" type="submit">
+					Save
+				</button>
+			</div>
+		</div>
+		
+		<div id="id_for_photo"></div>
+	</form>
+</div>
+
+<div id="dialog-confirm" title="Warning!!!">
+	<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>You have already uploaded a public photo on this date.</p>
+</div>
+
+
+<script>
+	$(document).ready(function() {
+
+		$("#save_story").attr('disabled', 'disabled');
+		$(".myform").hide();
+		$("#dialog-confirm").hide();
+		// Creating the object of the frame so that we
+		// can access its ids and classes.
+		var my_frame = $('#upload_frame');
+		my_frame.load(function() {
+			// Getting the value of the elements
+			var my_photo_file = my_frame.contents().find('#id_photo');
+			var upload_photo_btn = my_frame.contents().find('#upload_photo_btn');
+			var image_to_click = my_frame.contents().find('#image_to_click');
+			image_to_click
+			var upload_form = my_frame.contents().find('#upload_form');
+			var csrf_token = my_frame.contents().find('input[name="csrfmiddlewaretoken"]').val();
+			var replace = my_frame.contents().find('#replace');
+			var bar = my_frame.contents().find('.bar');
+			var progress = my_frame.contents().find('.progress');
+			$(progress).hide();
+			var percent = my_frame.contents().find('.percent');
+			var status = my_frame.contents().find('#status');
+			$(image_to_click).click(function () {
+			    $(my_photo_file).click();
+			});
+			$(my_photo_file).change(function() {
+				
+
+				var files = !! this.files ? this.files : [];
+			    if (!files.length || !window.FileReader) return;
+			    if (/^image/.test(files[0].type)) {
+				    $(image_to_click).hide();
+				    $('iframe').css({'height': '30px'});
+					$(".myform").show();
+					$(".myform").draggable();
+					$(progress).hide();
+					//$(".myform").css({'margin-top': '-380px'});
+			    	var reader = new FileReader();
+			        reader.readAsDataURL(files[0]);
+			        reader.onloadend = function () {
+			        	//$('body').css({'background': this.result});
+			        	$('body').css({
+							'background-image' : 'url(' + this.result + ')',
+							'-webkit-background-size' : 'cover',
+							'-moz-background-size' : 'cover',
+							'-o-background-size' : 'cover',
+							'' : 'cover',
+							'background-size' : 'cover'
+						});
+			        	$(upload_form).ajaxSubmit({
+						    beforeSend: function() {
+						    	$(progress).show();
+						        status.empty();
+						        var percentVal = '0%';
+						        bar.width(percentVal)
+						        percent.html(percentVal);
+						    },
+						    uploadProgress: function(event, position, total, percentComplete) {
+						        var percentVal = percentComplete + '%';
+						        bar.width(percentVal)
+						        percent.html(percentVal);
+								console.log(percentVal, position, total);
+						    },
+						    success: function() {
+						        var percentVal = '100%';
+						        bar.width(percentVal)
+						        percent.html(percentVal);
+						    },
+							complete: function(xhr) {
+								
+								$(replace).html(xhr.responseText);
+								
+								$("#save_story").attr('disabled', 'disabled');
+
+								var photo_id = my_frame.contents().find('#photo_id').val();
+								
+								$("<input id='thehidden' type='hidden' name='new_photo_id' value=" + photo_id + ">").appendTo("#id_for_photo");
+								var photo_path = my_frame.contents().find('#photo_path').val();
+								photo_path = photo_path.toString();
+								$('#datepicker').change(function() {
+									$("#save_story").attr("disabled", "true");
+									var date = $('#datepicker').val();
+									var split = date.split("-");
+									var year = split[0];
+									var month = split[1];
+									var day = split[2];
+									
+									$.ajax({
+										type: 'GET',
+										url: '/check-for-taken-date/' + year + "/" + month + "/" + day,
+										success: function(args) {
+											console.log("RESPONSE: " + args);	
+											$("#save_story").click(function(e) {
+												if(args === 'false') {
+													$("#dialog-confirm").show();
+													$( "#dialog-confirm" ).dialog({
+														resizable: false,
+														height:200,
+														modal: true,
+														buttons: {
+															"Select another date": function() {
+																$( this ).dialog( "close" );
+																return false;
+															},
+															"Ignore": function() {
+																$( this ).dialog( "close" );
+																$("#writes_story_form").submit();
+															}
+														}
+													});
+												}
+												else {
+													$("#dialog-confirm").hide();
+													$("#writes_story_form").submit();
+												}
+												e.preventDefault();
+											});
+										}	
+									});
+								});
+								$("#writes_story_form").change(function() {
+									var heading = $("#id_heading").val();
+									var story = $("#id_story").val();
+									var date_to_set = $('#datepicker').val();
+
+
+									
+									if(photo_id != "" && heading != "" && story != "" && date_to_set != "") {
+										$("#save_story").removeAttr("disabled");
+									} else {
+										$("#save_story").attr("disabled", "true");
+									}
+								});
+							}
+						});
+			        }
+			    } else {
+			    	alert('Please select only images');
+			    }
+				
+			});
+		});	
+	});
+</script>
+
+<script>
+	
+
+</script>
+<noscript>
+	<div style="position: fixed; top: 0px; left: 0px; z-index: 3000;
+	height: 100%; width: 100%; background-color: #FFFFFF">
+		<p style="margin-left: 10px">
+			It seems you have your javascript disabled. Please enable to load this page.
+		</p>
+	</div>
+</noscript>
+{% endblock %} 

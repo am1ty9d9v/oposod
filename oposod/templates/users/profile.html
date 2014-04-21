@@ -1,0 +1,206 @@
+{% extends "users/base.html" %}
+{% load cropping %}
+{% load url from future %}
+{% block content %}
+<style>
+     input[type=text] {
+        width: 150px;
+    }
+    .nav-menu button {
+        width: auto;
+        min-width: 110px;
+        max-width: 140px;
+        margin: 4px 0 4px 0;
+        font-size: 13px;
+    }
+
+    #id_write_status_form input {
+        width: 100%;
+    }
+
+</style>
+    <!-- This code make sure when the user had hit any ajax button that
+    do some changes, ani then hit back and then forward button, then we are
+    reloading the page so that he does not see the same button on page
+    again.
+    -->
+    <input type="hidden" id="refreshed" value="no">
+    <script type="text/javascript">
+        onload = function() {
+            var e = document.getElementById("refreshed");
+            if(e.value == "no")
+                e.value = "yes";
+            else {
+                e.value = "no";
+                location.reload();
+            }
+        }
+    </script>
+    
+
+    {% if not cover_photo_obj and user.username == username %}
+        <div class="topcorner" title="Upload a cover image" onclick="location.href='{% url 'edit_cover_photo' %}'">
+            <img class="swap" src="{{STATIC_URL}}images/arrow_grey.png">
+        </div>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $(".swap").hover(function() {
+                    $(this).attr('src', '{{STATIC_URL}}images/arrow_red.png');
+                }, function() {
+                    $(this).attr('src', '{{STATIC_URL}}images/arrow_grey.png');
+                });
+            });
+        </script>
+    {% endif %}
+
+    {% if cover_photo_obj and user.username == username %}
+        <div class="topcorner" title="Upload a cover image" onclick="location.href='{% url 'edit_cover_photo' %}'">
+            <img class="swap" style="width:100px;height:50px;" src="{{STATIC_URL}}images/arrow_grey.png">
+        </div>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $(".swap").hover(function() {
+                    $(this).attr('src', '{{STATIC_URL}}images/arrow_red.png');
+                }, function() {
+                    $(this).attr('src', '{{STATIC_URL}}images/arrow_grey.png');
+                });
+            });
+        </script>
+    {% endif %}
+    <div class="profile-container">
+        <div class="profile-left put_border">
+            <center>
+            <div class="nav-menu" style="border-bottom:5px solid #f6f8f9;">
+                <button class="btn" id="load_photos1">Daily Photos</button>
+                <button class="btn" id="load_coverphotos">Cover Photos</button>
+                <button class="btn" id="load_profilephotos">Profile Photos</button>
+                <button class="btn" id="load_calendar">Calendar</button>
+                <button class="btn" id="load_stories">Stories</button>
+                <button class="btn" id="load_testimonial">Testimonial</button>
+                <button class="btn" id="load_friends">Friends</button>
+            </div>
+            </center>
+            <div class="show-content">
+
+            </div>
+
+        </div>
+        <div class="profile-right">
+            <div class="profile-logo-desc">
+            
+                <div class="profile-desc put_border" style=" position: relative;">
+                    <div id="profile-photo" class="circular" style="position: absolute; ">
+                        {% if profile_photo_obj %}
+                            {% for profilephoto in user_obj.profilephoto_set.all %}
+                                        {% if profilephoto.is_set %}
+                                            <img class="" style="" src="{% cropped_thumbnail profilephoto cropping %}">
+                                        {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <img src="http://amityadav.in/pic.jpg"  />
+                        {% endif %}
+                    </div>
+                    <h2>{{user_obj.first_name}}</h2>
+                    
+                    <h2>{{user_obj.last_name}}</h2>
+                    {% if profile_obj.description %}
+                        <p>{{profile_obj.description|truncatechars:100}}</p>
+                    {% endif %}
+                    <span style='font-family: "Ubuntu", sans-serif;color:#fff;'>
+                    {% if profile_obj.city %}
+                        {{profile_obj.city}}
+                    {% endif %}
+                    {% if profile_obj.city and profile_obj.country %}
+                    |
+                    {% endif %}                   
+                    
+                    {% if profile_obj.country %}
+                        {{profile_obj.country}}
+                    {% endif %}
+                    </span>
+                    <div style="position: absolute; margin-bottom:4px;bottom: 0; left: 5px;">
+                        {% if profile_obj.user.username == user.username %}
+                            <button class="btn" onclick="location.href='{% url 'edit_profile'%}'">Edit</button>
+                            <button class="btn" id="load_photos">Photos</button>
+                        {% else %}
+                            {% if send_fr_obj or received_fr_obj %}
+                                {% if send_fr_obj and send_fr_obj.is_accepted %}
+                                    <button class="btn" id="friends">Connected</button>
+                                    <button class="btn" id="load_photos">Photos</button>
+                                {% endif %}
+
+                                {% if send_fr_obj and not send_fr_obj.is_accepted %}
+                                    <button class="btn" id="request-pending">Request Pending</button>
+                                    <button class="btn" id="load_photos">Photos</button>
+                                {% endif %}
+
+                                {% if received_fr_obj and received_fr_obj.is_accepted  %}
+                                    <button class="btn" id="friends">Connected</button>
+                                    <button class="btn" id="load_photos">Photos</button>
+                                {% endif %}
+
+                                {% if received_fr_obj and not received_fr_obj.is_accepted  %}
+                                    <button class="btn" id="accept-request">Accept request?</button>
+                                    <script type="text/javascript">
+                                        $(document).ready(function() {
+                                            $("#accept-request").click(function() {
+                                                $.ajax({
+                                                    type : 'GET',
+                                                    url : '/accept-friend-request/' + {{received_fr_obj.sender.id}} ,
+                                                    success: function() {
+                                                        location.reload();
+                                                    }
+                                                });
+                                                
+                                            });
+                                        });
+                                    </script>
+                                    <button class="btn" id="load_photos">Photos</button>
+                                {% endif %}
+                            {% else %}
+
+                                <button class="btn" id="add-as-friend">Connect</button>
+                                <button class="btn" id="load_photos">Photos</button>
+                            {% endif %}
+
+                        {% endif %}
+                    </div>
+
+                </div> 
+            </div>
+            <div class="status" style=" position: relative;">
+            {% if status_obj %}
+            <p>
+                {{status_obj.status}}
+            </p>
+            {% endif %}
+            {% if user.username == username %}
+            <div style=" position: relative;">
+                <!-- <button class="btn" onclick="location.href='{% url "write_status" %}'">Write new status</button> -->
+                <form id='id_write_status_form' action="{% url 'write_status' %}" method="post">
+                    {% csrf_token %}
+                    {{form.as_p}}
+                </form>
+                <button id="write_status_button" class="btn">Write Status</button>
+            <script type="text/javascript">
+                $('#id_write_status_form').hide();
+                $('#write_status_button').click(function() {
+                    $('#id_write_status_form').show();
+                    $(".status").css({'opacity': '0.9'})
+                    $(this).hide();
+                });
+            </script>
+            {% endif %}
+        </div>
+        </div>
+
+            
+        
+        
+
+    </div>
+    
+    <script type="text/javascript">$(".profile-left").hide();$(document).ready(function(){$('#add-as-friend').click(function(){ {%if user.is_authenticated%}$('#add-as-friend').text('Request sent');$.ajax({type:'GET',url:'/send-friend-request/'+ '{{profile_obj.user.id}}',success:function(){$('#add-as-friend').text('Request sent')}});{%else%}alert('Please login first');{%endif%}})});</script><script type="text/javascript">$(document).ready(function(){$('#request-pending').data('textToggle','Cancel request?').hover(function(e){var that=$(this);var textToSet=that.data('textToggle');that.data('textToggle',that.text());that.text(textToSet)},function(e){var that=$(this);var textToSet=that.data('textToggle');that.data('textToggle',that.text());that.text(textToSet)})});$('#request-pending').click(function(){$.ajax({type:'GET',url:'/cancel-friend-request/'+{{profile_obj.user.id}},success:function(){location.reload()}})});</script><script type="text/javascript">$(document).ready(function(){$("#btn-profile-photo").hide();$("#profile-photo").hover(function(){$("#btn-profile-photo").show()})});</script><script type="text/javascript">$(document).ready(function(){$("#load_photos").click(function(){$(".topcorner").hide();$(".profile-left").show();$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$('#load_photos1').addClass('btn-primary');$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$.ajax({type:'GET',url:'{% url "browse_daily_photo_all" username %}',success:function(res){$(".show-content").html(res)}})});$("#load_profilephotos").click(function(){$(".profile-left").show();$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$.ajax({type:'GET',url:'{% url "browse_profile_photo_all" username %}',success:function(res){$(".show-content").html(res);$('#load_profilephotos').addClass('btn-primary')}})});$("#load_coverphotos").click(function(){$(".profile-left").show();$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$.ajax({type:'GET',url:'{% url "browse_cover_photo_all" username %}',success:function(res){$(".show-content").html(res);$('#load_coverphotos').addClass('btn-primary')}})});$("#load_photos1").click(function(){$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$.ajax({type:'GET',url:'{% url "browse_daily_photo_all" username %}',success:function(res){$(".profile-left").show();$(".show-content").html(res);$('#load_photos1').addClass('btn-primary')}})});$("#load_calendar").click(function(){$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$.ajax({type:'GET',url:'{% url "calendar" username %}',success:function(res){$(".profile-left").show();$(".show-content").html(res);$('#load_calendar').addClass('btn-primary')}})});$("#load_friends").click(function(){$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$.ajax({type:'GET',url:'{% url "friends" username %}',success:function(res){$(".profile-left").show();$(".show-content").html(res);$('#load_friends').addClass('btn-primary')}})});$("#load_stories").click(function(){$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$.ajax({type:'GET',url:'{% url "stories" username %}',success:function(res){$(".profile-left").show();$(".show-content").html(res);$('#load_stories').addClass('btn-primary')}})});$("#load_testimonial").click(function(){$(".show-content").html('<img style="margin-top: 180px;margin-left:470px;" src="{{STATIC_URL}}images/loading.gif" />');$('#load_photos1').removeClass('btn-primary');$('#load_coverphotos').removeClass('btn-primary');$('#load_profilephotos').removeClass('btn-primary');$('#load_testimonial').removeClass('btn-primary');$('#load_friends').removeClass('btn-primary');$('#load_stories').removeClass('btn-primary');$('#load_calendar').removeClass('btn-primary');$.ajax({type:'GET',url:'{% url "testimonials" username %}',success:function(res){$(".profile-left").show();$(".show-content").html(res);$('#load_testimonial').addClass('btn-primary')}})})});</script>
+{% endblock %}

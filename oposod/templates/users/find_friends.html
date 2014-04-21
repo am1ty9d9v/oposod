@@ -1,0 +1,55 @@
+{% extends 'users/base.html'%}
+
+{% block content %}
+    <style type="text/css">
+        .main-con {
+            width: 960px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+
+
+    </style>
+    <div class="main-con">
+        {% if not is_user_connected %}
+            <center>
+                <h1>You are not connected to facebook, would you like to connect</h1>
+                <br>
+                <button class="button blue" onclick="location.href='/facebook/connect/?redirect_uri=/find-friends'">
+                    Connect to facebook
+                </button>
+            </center>
+        {% else %}
+            <div id="find-friends">
+                <center>
+                    <button class="button blue" style="width: 250px;">
+                       Find friends
+                    </button>
+                </center>
+            </div>
+
+            
+        {% endif %}
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#find-friends").click(function() {
+                $("button").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                $.ajax({
+                    type: 'GET',
+                    url: '/do-find-friends',
+                    success: function(args) {
+                        $(".main-con").html(args);
+                    }
+                });
+            })
+        });
+    </script>
+{% endblock %}

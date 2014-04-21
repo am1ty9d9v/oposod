@@ -1,0 +1,93 @@
+{% extends 'users/base.html'%}
+
+{% block content %}
+    <style type="text/css">
+        .main-con {
+            width:600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+
+        form {
+            margin: 0 auto;
+        }
+
+        select {
+            width: 300px;
+            float:left;
+            clear:both;
+            height: 50px;
+            font-size:30px;
+        }
+
+        #change_fb_settings_form button {
+            float:right;
+            margin-top: -20px;
+        }
+
+    </style>
+    <div class="main-con">
+        {% if not is_user_connected %}
+            <center>
+                <h1>You are not connected to facebook, would you like to connect</h1>
+                <br>
+                <button class="button blue" onclick="location.href='/facebook/connect/?redirect_uri=/find-friends'">
+                    Connect to facebook
+                </button>
+            </center>
+        {% else %}
+           
+            <form id="change_fb_settings_form" action="{% url 'change_facebook_settings' %}" method="post">
+                {% csrf_token %}
+                <p>
+                    <label for="id_is_sharing_of_photos_on_fb">
+                        <h1>Share automatically your daily photos on facebook :</h1>
+                    </label> 
+                    <br>
+                    <select title="is_sharing_of_photos_on_fb" id="id_is_sharing_of_photos_on_fb" name="is_sharing_of_photos_on_fb">
+                    <option value="Y" {% if fb_settings %}selected="selected"{%endif%}>Yes</option>
+                    <option value="N" {% if not fb_settings%}selected="selected"{%endif%}>No</option>
+                    </select>
+                    <br>
+                    <button id="save_fb_setting" class="button blue">Save</button>
+                </p>
+            </form>
+            <div id="dialog-confirm" title="Warning!!!">
+                <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>By setting "YES" to the photo sharing on facebook, you accept that we are making your daily photos visibility to "Everyone".</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#dialog-confirm").hide();
+            $("#save_fb_setting").click(function(e) {
+                $("button").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                $("#dialog-confirm").show();
+                $( "#dialog-confirm" ).dialog({
+                    resizable: false,
+                    height:200,
+                    modal: true,
+                    buttons: {
+                        "Cancel": function() {
+                            $( this ).dialog( "close" );
+                            $("button").html('Save');
+                            return false;
+                        },
+                        "Proceed": function() {
+                            $( this ).dialog( "close" );
+                            $("#change_fb_settings_form").submit();
+                        }
+                    }
+                });
+                e.preventDefault();
+            })
+        });
+    </script>
+{% endblock %}

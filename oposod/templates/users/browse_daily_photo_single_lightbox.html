@@ -1,0 +1,228 @@
+{% block head-extras%}
+      <meta property="og:title" content="{{dailyphoto_obj_single.heading}}"/>
+       <meta property="og:description" content="{{dailyphoto_obj_single.story|truncatewords:20}}"/>
+      <meta property="og:type" content="website"/>
+      <meta property="og:url" content="{{SITE}}/{{user_obj.username}}/daily-photo/{{dailyphoto_obj_single.key}}"/>
+      <meta property="og:image" content="{{SITE}}{{MEDIA_URL}}{{dailyphoto_obj_single.photo}}"/>
+{% endblock%}
+
+
+{% load cropping %}
+{% load likes_filter %}
+
+<style type="text/css"> .main_con_photo {width:100%;margin:0 auto; } .photo_heading {text-align: left; font-family: 'Alegreya', serif; font-size: 25px; width:700px; margin:0 auto; padding:10px; color:#000; font-weight:bold; line-height:1.1em; } .photo_con {width:700px;margin:0 auto;margin-top:0px;background:#f6f8f9;padding: 10px; } .left_profile_photo_con {position:absolute;margin-left:-120px;margin-top:-10px; } .left_profile_photo_img {width:80px;height:70px;border:2px solid #ddd;border-radius:5px; } .div_below_photo {background: #fff;padding: 14px; } .photo_story{text-align:justify;font-size: 14px;font-weight:bold; } h2 {background: #fff;font-family: 'Alegreya', serif; font-size: 20px;color: #929292; } #comment {clear:both; margin-bottom: 10%; } .single_comment {width: 670px; height: auto; clear:both; } .commenter_photo img {width: 30px; height: 30px; float:left; clear: both; margin-top:4px; } .comment {width: 610px; float:right; background: #f6f8f9; border:1px solid #FAF7F8; padding: 4px; margin-bottom:4px; min-height: 30px; } .comment p {font-size: normal; font-weight: normal; text-align: justify; } .do_comment_class {width:680px; } .loggedin_user_photo img{width:45px; height: 45px; margin-top:20px; } form#comment-form input[type=text] {margin-left:60px; margin-top:-78px; width: 600px; } </style>
+
+<div class="main_con_photo">
+    
+    {% if dailyphoto_obj_single %}
+
+    <h1 class="photo_heading">{{dailyphoto_obj_single.heading}}</h1>
+
+    <!-- PHOTO MAIN CONTAINER STARTS -->
+    <div class="photo_con">
+
+        <!-- PHOTO IMAGE CONTAINER STARTS -->
+        <div id="main-photo" style="position: relative;">
+            <span class="left_profile_photo_con">
+                {% for profilephoto in user_obj.profilephoto_set.all %}
+                    {% if profilephoto.is_set %}
+                      <a href="/{{user_obj.username}}">
+                          <img class="left_profile_photo_img" src="{% cropped_thumbnail profilephoto cropping %}">
+                      </a>
+                    {% endif %}
+                {% endfor %} 
+
+                <br>
+
+                <span>{{user_obj.first_name}} <br />{{user_obj.last_name}}</span>
+
+                <br/>
+
+                {% if dailyphoto_obj_single.moods %}
+                    <span title="{{user_obj.first_name}} says {{dailyphoto_obj_single.moods}}" class="circular">
+                        <!--<img style="width:60px;height:60px;" src="{{STATIC_URL}}images/moods/{{dailyphoto_obj_single.moods}}.png">-->
+                        <div class="sprite-images-{{dailyphoto_obj_single.moods}}"></div>
+                    </span>
+                {% endif %}
+
+                <br />
+
+                {{dailyphoto_obj_single.uploaded_on}}
+
+                <div title="Affections" id="likes-rating{{dailyphoto_obj_single.id}}" style="margin-top:20px;"></div>
+
+                <script type="text/javascript"> $('#likes-rating{{dailyphoto_obj_single.id}}').raty({starOff: '/static/images/likes_off.png', starOn : '/static/images/likes_on.png', targetKeep: true, hints: [], score: {{ score|get_id:dailyphoto_obj_single.id }}, click: function(score, evt) {$.post('/set-rating/',{score:score, dayphotoID:{{dailyphoto_obj_single.id}} }); var current_val = {{likes_count}} - {{ score|get_id:dailyphoto_obj_single.id }} + score; $('#likes-total').text(current_val); } });
+                </script> 
+            </span>
+          
+            <center>
+                <img max-width="700px" width="700px" height="auto" src="{{MEDIA_URL}}{{dailyphoto_obj_single.photo}}" />
+            </center>
+        </div>
+        <!-- PHOTO IMAGE CONTAINER ENDS -->
+
+        <!-- DIV BELOW PHOTO IMAGE STARTS -->
+        <div class="div_below_photo">
+
+            <!-- COMMENTS, LIKES AND PHOTO VIEWS COUNTS DIV STARTS -->
+            <div style="background: #f6f8f9;font-family: 'Alegreya', serif;font-size:20px;padding: 6px;height:30px;">
+            <div style="float:left;" title="This photo has {{comments_obj.count}} comments">
+                <!--<img width="30px" height="30px" src="{{STATIC_URL}}images/comments.png" /> <span id="comments-count">{{comments_obj.count}}</span>-->
+                <div class="sprite-images-comments" > <span id="comments-count" style="margin-left:35px;margin-top:7px;position:absolute">{{comments_obj.count}}</span></div>
+            </div>
+            <div id="likes-count" style="cursor:pointer;text-align:center" title="This Image has a total {{likes_count}} likes">
+                <!--<img width="25px" height="25px" src="{{STATIC_URL}}images/likes.png" /> <span id="likes-total">{{likes_count}}</span>-->
+                <div class="sprite-images-likes" style="margin-left:310px;position:relative"> <span id="likes-total" style="margin-left:20px;margin-top:7px;position:absolute">{{likes_count}}</span></div>
+            </div>
+            <div style="float:right;margin-top: -30px;position:relative" title="This photo is viewed {{dailyphoto_obj_single.no_of_views}} times">
+                <!--<img width="20px" height="20px" src="{{STATIC_URL}}images/no_of_views.png">{{dailyphoto_obj_single.no_of_views}}-->
+                <div class="sprite-images-no_of_views" style="margin-right:30px;margin-top:5px;position:relative"><div style="margin-left:20px;margin-top:10px;position:absolute">{{dailyphoto_obj_single.no_of_views}}</div></div>
+           </div>
+          </div>
+            <!-- COMMENTS, LIKES AND PHOTO VIEWS COUNTS DIV ENDS -->
+          
+            <script type="text/javascript"> $(document).ready(function() {$("#likes-count").click(function() {var url = '/show-likes-history/' + {{dailyphoto_obj_single.id}}; $.colorbox({fixed:true, width:700 , height:400,opacity:0.60,scrolling:true, scalePhotos:true, title: 'This photo likes history',href:url}); }); }); </script>
+         
+            <br>
+
+            <!-- STORY DIV STARTS -->
+            <div id="story_actions" class="photo_story" {% if request.user == dailyphoto_obj_single.user%}title="Double click to edit story" {% endif %}>
+                <p>
+                    {{dailyphoto_obj_single.story|safe }}
+                </p>
+            </div>
+            <!-- STORY DIV ENDS -->
+
+
+            {% if request.user == dailyphoto_obj_single.user %}
+            <!-- STORY EDITING SCRIPT STARTS -->
+                <script type="text/javascript">
+                      $(document).ready(function(){function divClicked(){var divHtml=$("#story_actions").html().replace(/\s+/g," ");var editableText=$('<textarea id="edit_story"  name="do_edit_story" style="width: 660px;height:300px;margin-top:5px;data-bind="value: message, event: { "keypress": keypress }" ></textarea>');editableText.val(divHtml);$("#story_actions").replaceWith(editableText);editableText.focus();$('#edit_story').keypress(function(e){var story=$("#edit_story").val();if(e.which==13){$.ajax({type:'GET',data:{'do_edit_story':story},url:'/edit-story/'+{{dailyphoto_obj_single.id}},});var viewableText=$('<div id="story_actions" style="text-align:justify;height:auto;clear:both;font-weight:bold;font-size:14px;width:660px;">');viewableText.html(story);$("#edit_story").replaceWith(viewableText);$("#story_actions").dblclick(divClicked)}});editableText.blur(editableTextBlurred)}function editableTextBlurred(){var html=$(this).val();var viewableText=$('<div id="story_actions" style="text-align:justify;font-weight:bold;height:auto;clear:both;font-size:14px;width:660px;">');viewableText.html(html);$(this).replaceWith(viewableText);$(viewableText).dblclick(divClicked)}$("#story_actions").dblclick(divClicked)});
+                </script>
+                <!-- STORY EDITING SCRIPT ENDS -->
+            {%endif %}
+
+            <hr>
+
+            <h2 class="h2 center">Comments</h2>
+
+            <!-- All COMMENT DIV STARTS -->
+            <div id="comment">
+                {% for comment in comments_obj%}
+                    <div style="position:relative;" id="comment_box_{{comment.id}}" {% if request.user == comment.user %}title="Double click to edit this comment" {%endif%} class="single_comment">
+                        
+                        {% if request.user == comment.user or request.user == user_obj %}
+                            <div id="delete_comment_{{comment.id}}" style="position:absolute;margin-left:660px;margin-top:0px;cursor:pointer;font-weight:bold;" title="Delete">
+                                X
+                            </div>
+                             <script type="text/javascript">
+                                $(document).ready(function() {$("#delete_comment_{{comment.id}}").hide(); $("#comment_box_{{comment.id}}").hover(function() {$("#delete_comment_{{comment.id}}").show(); }, function() {$("#delete_comment_{{comment.id}}").hide(); }); $("#delete_comment_{{comment.id}}").click(function() {$.ajax({type: "GET", url: '/delete-comment/' + {{comment.id}}, success: function(e) {$("#comment_box_{{comment.id}}").hide(); } }); }); }); 
+                            </script>
+                        {% endif %}
+
+
+                        <div title="{{comment.user.first_name}} {{comment.user.last_name}}" class="circular commenter_photo">
+                            {% for profilephoto in comment.user.profilephoto_set.all %}
+                                {% if profilephoto.is_set %}
+                                    <a href="/{{comment.user.username}}">
+                                        <img src="{% cropped_thumbnail profilephoto cropping %}">
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div id="commentid_{{comment.id}}" class="comment">
+                            <p>
+                                {{comment.comment|safe}}
+                            </p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- ALL COMMENT DIV ENDS -->
+
+            <!-- DO COMMENT FORM SECTION STARTS -->
+            {% if user.is_authenticated %}
+            <br>
+            <br>
+            <div class="do_comment_class">
+                <div class="loggedin_user_photo">
+                    {% for profilephoto in user.profilephoto_set.all %}
+                        {% if profilephoto.is_set %}
+                            <a href="/{{user.username}}">
+                                <img src="{% cropped_thumbnail profilephoto cropping %}">
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="do_comment_input_box">
+                    <form id="comment-form" action="{% url 'do_comment' dailyphoto_obj_single.id %}" method="post">
+                        {% csrf_token %}
+                        <input id="do_comment" type="text" name="do_comment" maxlength="255" placeholder="Add comment..." />
+                    </form>
+                </div>
+                <script type="text/javascript">
+                   $('#comment-form').submit(function (e) {
+                        
+                        e.preventDefault();
+                        var comment = $("#do_comment").val();
+                        ncomment = comment;
+                        for (var key in window.usersList) {
+                            stm = "[" + key + "]";
+                            if (comment.search(stm) != -1) {
+                                ncomment = comment.split(stm).join("<a href='" + window.usersList[key]['url'] + "'>@" + key + "</a>")
+                            };
+                            comment = ncomment;
+                        };
+                        var rep = '<div class="single_comment"> <div title="{{comment.user.first_name}} {{comment.user.last_name}}" class="circular commenter_photo"> {% for profilephoto in user.profilephoto_set.all %} {% if profilephoto.is_set %} <a href="/{{user.username}}"> <img src="{% cropped_thumbnail profilephoto cropping %}"> </a> {% endif %} {% endfor %} </div> <div class="comment"> <p>' + comment + '</p> </div> </div>'; 
+                        $("#comment").append(rep);
+                        $.ajax({
+                            type: 'POST',
+                            data: {'do_comment': comment},
+                            url:'{% url "do_comment" dailyphoto_obj_single.id %}',
+                            success: function() {
+                                var current_comments_count = {{comments_obj.count}} + 1;
+                                $('#comments-count').text(current_comments_count);
+                                $('#comment-form').each(function () {
+                                    this.reset()
+                                });
+                            }
+                        });
+                        
+                    });
+                </script>
+            </div>
+            {% else %}
+            <br>
+            <br>
+            <p>Please <a href="/signin/">signin</a> to comment.</p>
+            {% endif %}
+            <!-- @SUGGESTION SCRIPT START -->
+            <script type="text/javascript">
+                var usersList={{friends_dict|safe}};var availableTags=[];var friends_added_list=[];for(var key in usersList){availableTags.push(key)};function split(val){return val.split(/@\s*/)}function extractLast(term){return split(term).pop()}$("#do_comment").bind("keydown",function(event){if(event.keyCode===$.ui.keyCode.TAB&&$(this).data("autocomplete").menu.active){event.preventDefault()}}).autocomplete({minLength:0,source:function(request,response){var term=request.term,results=[];if(term.indexOf("@")>=0&&(term.length-term.lastIndexOf("@"))>=3){term=extractLast(request.term);if(term.length>0){results=$.ui.autocomplete.filter(availableTags,term)}else{results=['Start typing...']}}response(results)},focus:function(){return false},select:function(event,ui){var terms=split(this.value);terms.pop();terms.push("["+ui.item.value+"]");friends_added_list.push(ui.item.value);console.log("fr list: " + friends_added_list);terms.push("");this.value=terms.join("");return false}});
+
+            </script>
+            <!-- @SUGGESTION SCRIPT END -->
+          
+            <!-- END DO COMMENT FORM SECTION -->
+            
+            
+        </div>
+        <!-- DIV BELOW PHOTO IMAGE STARTS -->
+    </div>
+    <!-- PHOTO MAIN CONTAINER ENDS -->
+{% else %}
+    {% if user.username == username %}
+    <h1 style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">You have no photos uploaded</h1>
+            <center>
+            <button class="btn"  onclick='location.href="{% url 'write_story' %}"'>Upload Photos Now</button>
+            </center>
+    {% else %}
+      <h1 style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">This user has no photos uploaded</h1>
+    {% endif %}
+{% endif %}

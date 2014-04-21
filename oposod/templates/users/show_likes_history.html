@@ -1,0 +1,123 @@
+{% load cropping %}
+<style type="text/css">
+    #con {
+        -moz-background-clip: border;     /* Firefox 3.6 */
+          -webkit-background-clip: border;  /* Safari 4? Chrome 6? */
+          background-clip: border-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+                        
+          -moz-background-clip: padding;     /* Firefox 3.6 */
+          -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
+          background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+                        
+          -moz-background-clip: content;     /* Firefox 3.6 */
+          -webkit-background-clip: content;  /* Safari 4? Chrome 6? */
+          background-clip: content-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+    }
+    .circular img{
+        width: 300px;
+        height: 300px;
+        border-radius: 150px;
+        -webkit-border-radius: 150px;
+        -moz-border-radius: 150px;
+    }
+
+    hr {
+        width: 600px;
+        clear: both;
+    }
+
+    .likes-count-con {
+        width: 500px;
+        margin: 0 auto;
+        height: 100px;
+        margin-top: -5px;
+        margin-bottom: -20px;
+    }
+
+    .user {
+        float:left;
+        width: 200px;
+        clear: both;
+    }
+
+    .user img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .likes-count {
+        float: right;
+        width: 300px;
+    }
+
+    .likes-count img {
+        width: 20px;
+        height: 20px;
+        margin-top: 25px;
+    }
+</style>
+<div id="con">
+{% if likes_obj %}
+    {% for single_liked_user in likes_obj %}
+    <div class="likes-count-con">
+    
+        <div class="user">
+           {% for i in single_liked_user.user.profilephoto_set.all %}
+           {% if i.is_set %}
+            <a href="/{{single_liked_user.user.username}}">
+                <div class="circular"><img style="margin-top: 5px;" src="{% cropped_thumbnail i cropping %}" /></div></a>
+                {% endif %}
+            {% endfor %}
+
+            <p>{{single_liked_user.user.first_name}} {{single_liked_user.user.last_name}}</p>
+        </div>
+
+        <div class="likes-count">
+            {% if single_liked_user.rating == 5 %}
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+            {% endif %}
+            {% if single_liked_user.rating == 4 %}
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+            {% endif %}
+            {% if single_liked_user.rating == 3 %}
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+            {% endif %}
+            {% if single_liked_user.rating == 2 %}
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+            {% endif %}
+            {% if single_liked_user.rating == 1 %}
+                <img src="{{STATIC_URL}}images/likes_on.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+                <img src="{{STATIC_URL}}images/likes_off.png">
+
+            {% endif %}
+            
+
+        </div>
+        
+        
+    </div><hr />
+    {% endfor %}
+
+{% else %}
+    <p>No likes yet</p>
+{% endif %}
+</div>

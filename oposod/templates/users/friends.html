@@ -1,0 +1,126 @@
+
+{% load cropping %}
+{% load url from future %}
+
+    <style type="text/css">
+        h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+
+    </style>
+  
+    {% if user.username == username %}
+    
+    {% if fr_obj %}
+    <h1>New connection request</h1>
+        {% for friend in fr_obj %}
+            <div id="new-req-div-{{friend.sender.username}}" style="width:100%;padding: 10px; margin:0 auto;background: #fff;height:120px;border: 1px solid #FFFFFF;">
+                <div style="width:200px;float:left;clear:both;">
+                    {% for i in friend.sender.profilephoto_set.all %}
+                    {% if i.is_set %}
+                        <a href="/{{friend.sender.username}}"><img width='120px' height='90px' src="{% cropped_thumbnail i cropping %}"></a>
+                        {% endif %}
+                    {% endfor %}
+                    <p>{{friend.sender.first_name|title}} {{friend.sender.last_name|title}}</p>
+                </div>
+                <div style="width:400px;float:right;margin-top:40px;">
+                    <span id="accept-{{friend.sender.username}}" class="button green">Accept</span>  <span id="reject-{{friend.sender.username}}" class="button blue">Reject</span>
+                </div>
+            </div><hr>
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    $("#reject-{{friend.sender.username}}").click(function(event) {
+                        $("#accept-{{friend.sender.username}}").hide();
+                        $("#reject-{{friend.sender.username}}").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                        
+                        $.ajax({
+                            type : 'GET',
+                            url : '/reject-friend-request/' + {{friend.sender.id}},
+                            success: function() {
+                                $("#reject-{{friend.sender.username}}").text("Rejected");
+                            }
+                        });
+                    });
+
+                    $("#accept-{{friend.sender.username}}").click(function(event) {
+                        $("#reject-{{friend.sender.username}}").hide();
+                        $("#accept-{{friend.sender.username}}").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                        
+                        $.ajax({
+                            type : 'GET',
+                            url : '/accept-friend-request/' + {{friend.sender.id}},
+                            success: function() {
+                                $("#accept-{{friend.sender.username}}").text("Connected");
+                            }
+                        });
+
+                    });
+                });
+            </script>
+        {% endfor %}
+    
+    {% endif %}
+    {% endif %}
+   
+    <div style="width:400px;margin:0 auto;">
+        <h1 style="width:200px;float:left;clear:both;">
+            All connection
+            {% if user.username == username %} /
+        </h1> 
+        <h1 style="width:200px;float:right;">
+            <a href="{% url 'find_friends' %}">Find friends</a>
+        </h1>{% endif %}
+    </div>
+   
+
+    {% if friends_obj_list %}
+        {% for friend in friends_obj_list %}
+        <div class="friends" style="clear:both;padding:10px 10px 10px 10px;border-bottom: 1px solid #ddd;height:150px;margin: 0 auto; width:80%;">
+            <div style="width:300px;float:left;clear:both;">
+            {% for i in friend.profilephoto_set.all %}
+            {% if i.is_set %}
+                <a href="/{{friend.username}}"><img width='120px' height='100px' src="{% cropped_thumbnail i cropping %}"></a>
+                {% endif %}
+            {% endfor %}
+            <p>{{friend.first_name|title}} {{friend.last_name|title}}</p>
+            </div>
+            {% if user.username == username %}
+            <div style="width: 200px;float:right;margin-top:50px;margin-right:20px;">
+                <a id="delete-from-friends_{{friend.id}}" class="button blue">Disconnect</a>
+            </div>
+            {% endif %}
+
+           
+            
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    
+                    $(document).on("click", "#delete-from-friends_{{friend.id}}", function(){
+                        $("#delete-from-friends_{{friend.id}}").removeAttr("disabled");
+                        $("#delete-from-friends_{{friend.id}}").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                        
+                        $.ajax({
+                            type : 'GET',
+                            url : '/delete-from-friends/' + {{friend.id}},
+                            success: function() {
+                                $("#delete-from-friends_{{friend.id}}").text("Disconnected");
+                            }
+                        });
+
+                    });
+                });
+            </script>
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+        
+        <br><br>
+        <br><br>
+        <hr>
+        <center><p>No connection yet.</p></center>
+    {% endif %}

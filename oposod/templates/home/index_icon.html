@@ -1,0 +1,123 @@
+{% extends "users/base.html" %}
+{% load cropping %}
+{% load humanize %}
+{% load url from future %}
+{% block content %}
+{% load likes_filter %}
+<div class="body-wrapper">
+<script src="{{STATIC_URL}}js/colorfinder.js"></script>
+<script type="text/javascript">
+function favorHue(r,g,b) {
+  return (Math.abs(r-g)*Math.abs(r-g) + Math.abs(r-b)*Math.abs(r-b) + Math.abs(g-b)*Math.abs(g-b))/65535*50+1;
+}
+function favorBright(r,g,b) {
+  return r+g+b+1;
+}
+function favorDark(r,g,b) {
+  return 768-r-g-b+1;
+}
+function excludeWhite(r,g,b) {
+  return (r>245 && g>245 && b>245) ? 0 : 1;
+}
+function excludeBlack(r,g,b) {
+  return (r<10 && g<10 && b<10) ? 0 : 1;
+}
+function favorBrightExcludeWhite(r,g,b) {
+  if (r>245 && g>245 && b>245) return 0;
+  return (r*r+g*g+b*b)/65535*20+1;
+}
+</script>
+<script>$(document).ready(function(){$(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});});</script>
+
+
+
+{% if sorted_dp_dict %} 
+
+
+       
+      
+
+
+<section id="content">
+   <h1 style="text-align:center;font-family: 'Alegreya', serif;font-size: 20px;color: #929292;">New feed |</h1><span style="position:absolute;margin: -35px 0 0 710px;cursor:pointer;"><span><img id="list_based_view" title="List based view" src="{{STATIC_URL}}images/list_based_style.png"></span><span><img id="icon_based_view" title="Icon based view" src="{{STATIC_URL}}images/icon_based_style.png"></span></span>
+    <br>
+   <center>
+    <div id="container" style="width:100%;margin:0 -50px 0 50px;" class="transitions-enabled infinite-scroll clearfix">
+       {% for id, i in sorted_dp_dict %}
+          <div id="box_{{i.id}}" class="box col3" style="position:relative;">
+            <a class="group3" href="{% url 'browse_daily_photo_single_lightbox' i.user.username i.key %}">
+                <img id="image_{{i.id}}" title="{{i.heading}}" src="{{MEDIA_URL}}{{i.photo}}_280" />
+            </a>
+            <p id="id_story_con_{{i.id}}" style="background:#555557;font-size:10px;padding: 10px 4px 4px 4px;text-align:justify;color:#fff;">
+                {{i.story|striptags|truncatewords:20|truncatechars:100}}
+            </p>
+
+            <!--   <script>
+                var rgb = new ColorFinder(favorHue).getMostProminentColor(document.getElementById('image_{{i.id}}'));
+                document.getElementById("id_story_con_{{i.id}}").style.backgroundColor = 'rgb('+rgb.r+','+rgb.b+','+rgb.g+')';
+
+            </script>
+            -->
+            
+
+          </div>
+         
+        {% endfor %}
+    </div> <!-- #container -->
+
+</center>
+
+    <script>
+      $(function(){
+
+        var $container = $('#container');
+
+        $container.imagesLoaded(function(){
+          $container.masonry({
+            itemSelector: '.box',
+            columnWidth: 100
+          });
+        });
+      });
+
+      $("body").css({'overflow-x':'hidden'});
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#list_based_view').click(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/set/view/' + 'LIST',
+                    success: function() {
+                        location.reload();
+                    }
+                })
+            });
+
+            $('#icon_based_view').click(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/set/view/' + 'ICON',
+                    success: function() {
+                        location.reload();
+                    }
+                })
+            });
+        });
+    </script>
+
+</section> <!-- #content -->
+
+
+
+
+
+
+{% else %}
+
+ <h1>No feeds here.</h1>
+
+    {% endif %}
+
+{% endblock %} 

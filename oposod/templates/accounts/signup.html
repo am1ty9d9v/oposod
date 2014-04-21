@@ -1,0 +1,48 @@
+{% extends 'users/base.html' %}
+{% block content %}
+<style type="text/css">
+h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+        ul.errorlist li {
+          margin-top: 10px;
+          margin-left: 25px;
+          margin-bottom:20px;
+        }
+
+
+        
+        label {
+          margin-top: 10px;
+          clear:left;
+        }
+</style>
+<script>
+  $(function() {
+    $( "#datepicker" ).datepicker({
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "1930:{% now "Y" %}",
+      maxDate: "-10Y",
+    });
+  });
+  </script>
+    <div style="width:600px;margin: 0 auto;">
+        <h1>Signup to explore OPOSOD</h1>
+        <div class="signup-form">
+            <form id="signup" action="" method="post">
+                    {% csrf_token %}
+                    {{ form.as_p}}
+                    <br>
+                    <input type="hidden" name="next" value="{{ next }}"/>
+                    <center>
+                    <input type="submit" value="Sign Up" class="button blue">Or already registered?
+                    <a href="{% url 'signin' %}">Sign In</a>
+                    </center>
+            </form>
+        </div>
+    </div>
+{% endblock %}

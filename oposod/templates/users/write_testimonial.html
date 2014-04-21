@@ -1,0 +1,20 @@
+{% extends "users/base.html" %}
+{% block content %}
+<style type="text/css">
+    textarea {
+        width: 580px;
+        height: 200px;
+    }
+    label {
+        margin-bottom: 20px;
+    }
+  </style>
+<div style="width:600px;margin: 0 auto;">
+<form action="{% url 'write_testimonial' username %}" method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <br>
+    <button type="submit" class="green button">Write</button>
+</form>
+</div>
+{% endblock %}

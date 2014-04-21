@@ -1,0 +1,52 @@
+{% extends "users/base.html" %}
+{% load bootstrap_toolkit %}
+
+{% load url from future %}
+{% block content %}
+
+<style type="text/css">
+h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+        label{
+                float:left;
+                margin: 20px 0 -30px 0;
+            }   
+           
+            form#edit_profile_form {
+                width: 600px;
+            }
+            #edit_profile_form input[type=text] {
+                margin:0px 0 10px 200px;
+                width: 500px;
+                padding: 4px;
+                
+                height: 35px;
+                font-size: 16px;
+               
+            }
+</style>
+
+<script>
+  $(function() {
+    $( "#datepicker" ).datepicker({
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "1960:{% now "Y" %}"
+    });
+  });
+  </script>
+<div id="edit-profile" style="width:700px;margin:0 auto;">
+  <h1>Edit Profile | {{user.username}}</h1><hr>
+<form id="edit_profile_form" action="{% url 'edit_profile' %}" method="post">
+        {% csrf_token %}
+        {{ form|as_bootstrap }}
+
+        <input type="submit" value="Save" class="button green">
+
+</form>
+</div>
+{% endblock%}

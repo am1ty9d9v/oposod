@@ -1,0 +1,74 @@
+{% extends 'users/base.html' %}
+{% block content %}
+
+    <style type="text/css">
+        .privacy-settings-form {
+            width: 700px;
+            margin: 0 auto;
+        }
+
+        label {
+            margin-right: 200px;
+            margin-bottom: 27px;
+           
+        }
+        select {
+            margin-left: 400px;
+            margin-top: -100px;
+        }
+        h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+            margin-bottom: 20px;        }
+    </style>
+
+    <div class="privacy-settings-form">
+        <h1>Edit your privacy settings</h1><hr>
+        <form id="save_privacy_settings" action="{% url 'edit_privacy_settings' %}" method="post">
+            {% csrf_token %}
+            {{form.as_p}}
+            <center>
+            <button type="submit" class="button green center">Save</button>
+            </center>
+        </form>
+    </div>
+
+    <div id="dialog-modal" title="Error in saving">
+        <p>By setting your daily photo visibility to "Only me" or "Only connection" your photos will not be shared on facebook.</p>
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+             $("#dialog-modal").hide();
+            $("button").click(function(e) {
+                var e1 = document.getElementById("id_daily_photos_visibility");
+                var val_dp_visibility = e1.options[e1.selectedIndex].value;
+                if(val_dp_visibility === 'F' || val_dp_visibility === 'N') {
+                    $("#dialog-modal").show();
+                    $( "#dialog-modal" ).dialog({
+                      resizable: false,
+                      height:200,
+                      modal: true,
+                      buttons: {
+                        "Cancel": function() {
+                            $( this ).dialog( "close" );
+                            
+                            return false;
+                        },
+                        "Proceed": function() {
+                            $( this ).dialog( "close" );
+                            $("#save_privacy_settings").submit();
+                        }
+                      }
+                     });
+                    return false;
+                } else {
+                    return true;
+                }
+                e.preventDefault();             
+            });
+        }); 
+    </script>
+{% endblock %}

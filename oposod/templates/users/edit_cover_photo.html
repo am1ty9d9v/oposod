@@ -1,0 +1,22 @@
+{% extends "users/base.html" %}
+{% block content %}
+
+<style type="text/css">
+    h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+</style>
+<center>
+<h1>Upload a new cover photo</h1><hr>
+<form id="cover_photo" action="{% url 'edit_cover_photo' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <input type="submit" value="Upload" class="button green">
+
+</form>
+</center>
+{% endblock%}

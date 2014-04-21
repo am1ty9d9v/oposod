@@ -1,0 +1,112 @@
+{% extends 'users/base.html'%}
+{% block content%}
+{% load photo_tags %}
+{% load cropping %}
+<script>
+            $(document).ready(function(){
+                
+                
+                $(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});
+                
+            });
+        </script>
+    <style type="text/css">
+
+
+        .cal-con {
+            width: 960px;
+            margin: 0 auto;
+
+        }
+
+        select {
+            width: 150px;
+        }
+       
+        .calendar img:hover {
+         opacity: 0.9; 
+        }
+
+    
+
+        .calendar {
+            width: 700px;
+            margin: 0 auto;
+
+        }
+        table {
+            border: #ddd;
+        }
+
+        td {
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            font-size: 30px;
+        }
+
+        th {
+            background: #ddd;
+        }
+        ul li {
+            list-style: none;
+        }
+        .calendar img {
+            width: 100px;
+            height: 100px;
+
+        }
+
+
+    </style>
+    <script>
+      $(document).ready(function() {
+        $(".dayid").hover(function() {
+          //$(".dayid").css("opacity" ='1');
+        });
+      });
+    </script>
+<body>
+
+    <div style="width: 700px;margin:0 auto;">
+        <div style="width: 500px;float:left;clear:both;">
+            <form action="" method="post">
+                {% csrf_token %}
+                <select class="selectpicker" name="month" data-style="btn" data-width="20%">
+                    {% for month in month_name_list %}
+                    <option>{{month}}</option>
+                    {% endfor %}
+                </select>
+
+                <select class="selectpicker" name="year" data-style="btn" data-size="5" data-width="15%">
+                    {% for year in year_list %}
+                    <option>{{year}}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" style="margin-top: -10px;" class="btn btn-primary">Show</button>
+            </form>
+            <script type="text/javascript">
+                $(window).on('load', function () {
+                    $('.selectpicker').selectpicker({
+                    });
+                });
+
+            </script>
+        </div>
+
+        <div  class='pagination'>
+            <ul>
+                <li><a href="/{{username}}/photo-calendar/{{previous_year}}/{{previous_month}}">{{previous_month_name}}</a></li>
+                <li><a href="/{{username}}/photo-calendar/{{next_year}}/{{next_month}}">{{next_month_name}}</a></li>
+            </ul>
+        </div>
+    </div>
+
+   <hr>
+    <div class="calendar" width="960px">
+        {% photo_calendar year month photo_list %}
+    </div>
+
+
+
+{% endblock%}

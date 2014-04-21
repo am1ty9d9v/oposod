@@ -1,0 +1,78 @@
+
+{% if profilephoto_obj %}
+<script>$(document).ready(function(){$(".group3").colorbox({rel:'group3', transition:"none", width:"75%", height:"75%"});});</script>
+<section id="content">
+
+
+<h1 style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">All Profile photos</h1>
+            <hr>
+<div id="container" style="width:100%;margin: 0 auto;margin-left:0px;" class="transitions-enabled infinite-scroll clearfix">
+    {% for i in profilephoto_obj %}
+      <div class="box col3">
+        <a class="group3" href="{{MEDIA_URL}}{{i.profile_photo}}"><img src="{{MEDIA_URL}}{{i.profile_photo}}_280" />
+                </a>
+        {% if user.username == user_obj.username %}
+
+            
+        <p style="border-top:1px solid #ddd;background:#fff;font-size:10px;padding: 10px 4px 4px 4px;text-align:justify;"><a style="color:#a6a6a6;text-decoration:underline;" href="{% url "edit_profile_photo" i.key %}">Set as profile photo</a></p>
+
+        {% endif %}
+      </div>
+        {% endfor %}
+
+
+
+
+
+
+</div> <!-- #container -->
+
+
+
+<script>
+  $(function(){
+
+    var $container = $('#container');
+
+    $container.imagesLoaded(function(){
+      $container.masonry({
+        itemSelector: '.box',
+        columnWidth: 100
+      });
+    });
+
+    
+
+  });
+</script>
+
+  </section> <!-- #content -->
+
+
+
+
+
+
+{% else %}
+
+  {% if user.username == username %}
+    <h1 style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">No activity here</h1>
+            <center>
+            
+            </center>
+    {% else %}
+      <h1 style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">No activity here</h1>
+    {% endif %}
+
+
+    {% endif %}
+

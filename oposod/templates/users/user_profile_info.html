@@ -1,0 +1,23 @@
+{% extends "users/base.html" %}
+{% load cropping %}
+{% load url from future %}
+{% block content %}
+{% if user.username != username %}
+    <center>
+        {% for profilephoto in user_obj.profilephoto_set.all %}
+            {% if profilephoto.is_set %}
+            <a href="/{{user_obj.username}}">
+            <img style="width:30px;height:30px;margin-left:136.7px;" src="{% cropped_thumbnail profilephoto cropping %}">
+            </a>
+            {% endif %}
+        {% endfor %} |
+        <a href="/{{user_obj.username}}">{{user_obj.first_name}}'s profile</a>|
+        <a href="{% url 'calendar' user_obj.username %}">Calendar</a> | 
+        <a href="{% url 'stories' user_obj.username %}">Stories</a>| 
+        <a href="{% url 'testimonials' user_obj.username %}">Testimonials</a> |
+        <a href="{% url 'browse_daily_photo' user_obj.username %}">Photos</a>
+        {% endif %}
+    </center>
+
+    
+{% endblock %}

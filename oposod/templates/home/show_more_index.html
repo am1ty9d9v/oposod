@@ -1,0 +1,60 @@
+{% load cropping %}
+<script>$(document).ready(function(){$(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});});</script>
+{% for id, dp_obj in sorted_dp_dict %}
+<div class="main-container">
+<div class="story-container">
+	<div id="photo_{{dp_obj.id}}" class="photo" style="position:relative">
+		<a class="group3" title="{{dp_obj.heading}}" href="{% url "browse_daily_photo_single_lightbox" dp_obj.user.username dp_obj.key %}"><img src="{{MEDIA_URL}}{{dp_obj.photo}}_200x160"> </a>
+		<div id="id_on_date_{{dp_obj.id}}" style="position:absolute;background:#000;color:#fff;padding:4px;margin-top:130px;margin-left:2px;">
+			{{dp_obj.uploaded_on}}
+		</div>
+	</div>
+	<script type="text/javascript">
+		$("#id_on_date_{{dp_obj.id}}").css({'opacity': '0.3'});
+		$("#photo_{{dp_obj.id}}").hover(function() {
+			$("#id_on_date_{{dp_obj.id}}").css({'opacity': '0.9'});
+		}, function() {
+			$("#id_on_date_{{dp_obj.id}}").css({'opacity': '0.3'});
+		})
+	</script>
+	<div class="story">
+		<p style="margin-bottom: -10px;color:#343536;font-size:14px">
+			{{dp_obj.heading|striptags|truncatewords:10|truncatechars:100}}
+		</p>
+		<hr>
+		<p style="font-size: 11px;margin-top:-10px;">
+			{{dp_obj.story|striptags|truncatewords:60|truncatechars:300}}
+		</p>
+	</div>
+</div>
+<div class="user">
+	{% for i in dp_obj.user.profilephoto_set.all %}
+	{% if i.is_set %} <a href="/{{dp_obj.user.username}}">
+	<div class="circular"><img style="margin-top: 0px;" src="{% cropped_thumbnail i cropping %}" />
+	</div></a>
+	{% endif %}
+	{% endfor %}
+	<p>
+		{{dp_obj.user.first_name}} {{dp_obj.user.last_name}}
+		
+		
+		
+	</p>
+
+	{%if dp_obj.moods%}
+		<img title="{{dp_obj.moods}}" style="width:45px;height:45px;" src="{{STATIC_URL}}images/moods/{{dp_obj.moods}}.png" />
+	{% endif %}
+	<br>
+	{% if dp_obj.likes_set.values.0.rating %} With 
+		{{dp_obj.likes_set.values.0.rating}} loves, and 
+		{% endif%}
+		
+		{{dp_obj.comments_set.values.count}} comment(s)
+</div>
+</div>
+{% if forloop.last %}
+<div id="hidden_last_shown_dp_id">
+<input type="hidden" name="dp_id" value="{{dp_obj.id}}" />
+</div>
+{% endif %}
+{% endfor %}

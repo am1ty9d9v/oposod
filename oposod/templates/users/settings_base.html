@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+{% load current_time %}
+{% load cropping %}
+{% load bootstrap_toolkit %}
+{% load url from future %}
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>OPOSOD</title>
+        <meta name="description" content="">
+        <meta name="author" content="Amit Yadav">
+        {% bootstrap_stylesheet_tag %}
+        <style type="text/css">
+            body {
+                background: #fff;
+            }
+
+        </style>
+          <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Alegreya' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Imprima' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu">
+
+        <!--[if lt IE 9]>
+        <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}styles/style.css">
+        {% bootstrap_javascript_tag %}
+        {% block extra_head %}{% endblock %}
+    </head>
+    <body>
+        <div id="menu" style="margin-top: 10px;border-radius: 4px;">
+            <ul id="menu" class="topmenu">
+                <li class="topfirst"><a class="" href="{% url 'edit_profile_photo' %}" style="height:16px;line-height:16px;">Edit profile photo</a></li>
+                <li class="topmenu"><a href="{% url 'edit_cover_photo' %}" style="height:16px;line-height:16px;">Edit cover photo</a></li>
+                 <li class="topmenu"><a href="{% url 'edit_profile' %}" style="height:16px;line-height:16px;">Edit profile</a></li>
+                <li class="topmenu"><a href="{% url 'stories' %}" style="height:16px;line-height:16px;">Upload new story</a></li>
+                <li class="topmenu"><a href="{% url 'write_status' %}" style="height:16px;line-height:16px;">Write new status</a></li>
+                <li class="topmenu"><a href="/photo-calendar/" style="height:16px;line-height:16px;">Calender</a></li>
+                <li class="topmenu"><a href="/friends" style="height:16px;line-height:16px;">Friends</a></li>
+                <li class="topmenu"><a href="/" style="height:16px;line-height:16px;">Home</a></li>
+                <li class="topmenu"><a href="/signout/" style="height:16px;line-height:16px;">Signout</a></li>
+            </ul>
+        </div>
+        <div class="container-fluid">
+            {% bootstrap_messages %}
+            <div style="margin-bottom:100px;">
+                {% block content %}Empty page{% endblock %}
+            </div>
+        </div>
+        <!-- container -->
+
+
+
+        <div class="navbar navbar-fixed-bottom" style="z-index:10;height:60px;">
+            <div class="navbar-inner">
+                <div class="container-fluid bottom-image-size">
+                    <ul class="nav ubuntu">
+                        <li><a href="{% url 'stories' %}"><img src="/static/images/upload.png"></a></li>
+                        <li><input id="search" style="width:100%;" type="text" placeholder="Search Oposod..."/></li>
+                    </ul>
+                    {% if user.is_authenticated %}
+                    <ul class="nav pull-right ubuntu">
+                        <li><a href="{% url 'signout' %}"><img style="width:20px;height:20px;margin-left:15px;" src="{{STATIC_URL}}images/logout1.png"><br>Signout</a></li>
+                        <li><a href="{% url 'browse_daily_photo' user.username %}"><img style="width:20px;height:20px;margin-left:15px;" src="{{STATIC_URL}}images/photo.png"><br>Photos</a></li>
+                        <li><a href="{% url 'friends' %}"><img style="width:20px;height:20px;margin-left:15px;" src="{{STATIC_URL}}images/friends.png"><br>Friends</a></li>
+                        <li><a href="{% url 'stories' %}"><img style="width:20px;height:20px;margin-left:15px;" src="{{STATIC_URL}}images/stories1.png"><br>Stories</a></li>
+                        <li><a href="{% url 'edit_profile' %}"><img style="width:20px;height:20px;margin-left:15px;" src="{{STATIC_URL}}images/settings1.png"><br>Settings</a></li>
+                        <li><a href="/"><img style="width:20px;height:20px;margin-left:6.7px;" src="{{STATIC_URL}}images/home_icon3.png"><br>Home</a></li>
+                        <li><a href="/{{user.username}}">
+                            {% if profile_photo_obj %}
+                            <img style="width:23px;height:22px;margin-left:6.7px;" src="{% cropped_thumbnail profile_photo_obj cropping %}">
+                            {% else %}
+                            <img style="width:23px;height:22px;margin-left:6.7px;" src="http://amityadav.in/pic.jpg">
+                            {% endif %}<br>
+                            {{user.first_name|title}} {{user.last_name|title}}</a></li>
+                    </ul>
+                    {% else %}
+                        <ul class="nav pull-right ubuntu">
+                        <li style="margin-top:8px;"><a href="{% url 'join_us' %}"><span class="button green" >Join us</span> to explore more.</a></li>
+
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $("#search").click(function() {
+                    $("input").css("width", "200%");
+                });
+            });
+
+            $(document).ready(function () {
+                $("#search").mouseout(function() {
+                    $("input").css("width", "100%");
+                });
+            });
+        </script>
+    </body>
+</html>

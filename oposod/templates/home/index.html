@@ -1,0 +1,211 @@
+{% extends "users/base.html" %}
+{% load cropping %}
+{% load humanize %}
+{% load url from future %}
+{% block content %}
+{% load likes_filter %}
+<div class="body-wrapper">
+
+<script>$(document).ready(function(){$(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});});</script>
+
+	{% if user.is_authenticated %}
+	<style type="text/css">
+		h1 {
+			text-align: center;
+			font-family: 'Alegreya', serif;
+			font-size: 20px;
+			color: #929292;
+		}
+		p {
+			font-family: 'Open Sans', serif;
+			font-size: 13px;
+			color: #656565;
+		}
+		#outer-wrapper {
+			width: 960px;
+			margin: 0 auto;
+			margin-top: 10px;
+			margin-bottom: 100px;
+		}
+		.main-container {
+			width: 960px;
+			padding: 10px 10px 10px 10px;
+			border: 2px solid #fff;
+			height: 170px;
+			margin-bottom: 10px;
+			background: #f6f8f9;
+		}
+		.story-container {
+			width: 700px;
+			float: left;
+			clear: both;
+		}
+		.photo {
+			width: 280px;
+		}
+		.photo img {
+			width: 200px;
+			height: 160px;
+			float: left;
+			clear: both;
+		}
+		.story {
+			width: 400px;
+			float: right;
+		}
+		.user {
+			width: 200px;
+			float: right;
+		}
+		.user img {
+			width: 60px;
+			height: 60px;
+		}
+	</style>
+	<div id="outer-wrapper" style="position:relative;">
+		
+		{% if sorted_dp_dict %} <h1>New feed |</h1><span style="cursor:pointer;position:absolute;margin: -35px 0 0 530px"><span><img id="list_based_view" title="List based view" src="{{STATIC_URL}}images/list_based_style.png"></span><span><img id="icon_based_view" title="Icon based view" src="{{STATIC_URL}}images/icon_based_style.png"></span></span>
+    <br>
+		<div id="sss">
+		{% for id, dp_obj in sorted_dp_dict %}
+		<div class="main-container">
+			<div class="story-container">
+				<div id="photo_{{dp_obj.id}}" class="photo" style="position:relative">
+					<a class="group3" title="{{dp_obj.heading}}" href="{% url "browse_daily_photo_single_lightbox" dp_obj.user.username dp_obj.key %}"><img src="{{MEDIA_URL}}{{dp_obj.photo}}_200x160"> </a>
+					<div id="id_on_date_{{dp_obj.id}}" style="position:absolute;background:#000;color:#fff;padding:4px;margin-top:130px;margin-left:2px;">
+						{{dp_obj.uploaded_on}}
+					</div>
+				</div>
+				<script type="text/javascript">
+					$("#id_on_date_{{dp_obj.id}}").css({'opacity': '0.3'});
+					$("#photo_{{dp_obj.id}}").hover(function() {
+						$("#id_on_date_{{dp_obj.id}}").css({'opacity': '0.9'});
+					}, function() {
+						$("#id_on_date_{{dp_obj.id}}").css({'opacity': '0.3'});
+					})
+				</script>
+				<div class="story">
+					<p style="margin-bottom: -10px;color:#343536;font-size:14px">
+						{{dp_obj.heading|striptags|truncatewords:10|truncatechars:100}}
+					</p>
+					<hr>
+					<p style="font-size: 11px;margin-top:-10px;">
+						{{dp_obj.story|striptags|truncatewords:60|truncatechars:300}}
+					</p>
+				</div>
+			</div>
+			<div class="user">
+				{% for i in dp_obj.user.profilephoto_set.all %}
+				{% if i.is_set %} <a href="/{{dp_obj.user.username}}">
+				<div class="circular"><img style="margin-top: 0px;" src="{% cropped_thumbnail i cropping %}" />
+				</div></a>
+				{% endif %}
+				{% endfor %}
+				<p>
+					{{dp_obj.user.first_name}} {{dp_obj.user.last_name}}
+					
+					
+					
+				</p>
+
+				{%if dp_obj.moods%}
+                <!--<img title="{{dp_obj.moods}}" style="width:45px;height:45px;" src="{{STATIC_URL}}images/moods/{{dp_obj.moods}}.png" />-->
+                <div title="{{dp_obj.moods}}"  class="sprite-images-{{dp_obj.moods}}" ></div>
+				{% endif %}
+				<br>
+				{% if dp_obj.likes_set.values.0.rating %} With 
+					{{dp_obj.likes_set.values.0.rating}} loves, and 
+					{% endif%}
+					
+					{{dp_obj.comments_set.values.count}} comment(s)
+			</div>
+		</div>
+		{% if forloop.last %}
+		<div id="hidden_last_shown_dp_id">
+			<input type="hidden" name="dp_id" value="{{dp_obj.id}}" />
+		</div>
+		{% endif %}
+		{% endfor %}
+		</div>
+		<div  style="height: 20px;color:#6F6F6F;background: #f6f8f9;border-radius: 4px;cursor:pointer;margin:0 auto;border: 1px solid #fff;padding: 10px;width: 100px;" id="show_more">
+			<span id="show_more_text" style="top:-15px;float:left;clear:both;">Show more</span> <span style="float:right;margin-top:0px;"><img id="load_more_img" width="20px" height="20px" src="{{STATIC_URL}}images/loading.gif"></span>
+		</div>
+		
+		<script>
+			$(document).ready(function() {
+				$("#load_more_img").hide();
+				$(window).scroll(function() {
+					if($(window).scrollTop() == $(document).height() - $(window).height()) {
+						$("#show_more_text").text('Loading...')
+						$("#load_more_img").show();
+						var dp_id = $("#hidden_last_shown_dp_id input[type=hidden]").val();
+						//alert(dp_id);
+						//return false;
+						$.ajax({
+							type: 'GET',
+							url: '/show-more-home-feed/' + dp_id,
+							success: function(e) {
+								
+								$("#hidden_last_shown_dp_id").remove();							
+								$("#sss").append(e);					
+								var new_dp_id = $("#hidden_last_shown_dp_id input[type=hidden]").val();
+								$("#hidden_last_shown_dp_id input[type=hidden]").val(new_dp_id);
+								$("#show_more_text").text('Show more')
+								$("#load_more_img").hide();
+							}
+						});
+					}
+				});			
+			});	
+		</script>
+
+		 <script type="text/javascript">
+        $(document).ready(function() {
+            $('#list_based_view').click(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/set/view/' + 'LIST',
+                    success: function() {
+                        location.reload();
+                    }
+                })
+            });
+
+            $('#icon_based_view').click(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/set/view/' + 'ICON',
+                    success: function() {
+                        location.reload();
+                    }
+                })
+            });
+        });
+    </script>
+
+
+		
+		{% else %} <h1>No feeds here.</h1>
+		{% endif%}
+		{% else %}
+		<div class="top-pane">
+			<h1>Welcome to</h1>
+			<div class="logo-for-home-page">
+				OP-OS-OD
+			</div>
+			<center style="font-size:12px;margin-top:20px;color:#A3A3A3">
+				One Photo / One Story / One Day
+			</center>
+		</div>
+		<div class="bottom-pane">
+			<a href="{% url 'signin' %}" class="button green">signin</a>
+			<a href="{% url 'signup' %}" class="button blue">signup</a>
+			OR <a href="/facebook/connect/" class="button fb_blue">Facebook connect</a>
+		</div>
+		<div class="footer ubuntu">
+			Copyright (c) at <a href="http://bquobe.com">Bquobe</a> infosystem (P) Ltd. | <a href='/help'>Help</a> | <a href=''>Privacy</a> 
+		</div>
+		{% endif %}
+	</div>
+</div>
+{% endblock %} 

@@ -1,0 +1,28 @@
+{% extends "users/base.html" %}
+{% load cropping %}
+{% load url from future %}
+{% block content %}
+{% load likes_filter %}
+
+    <div class="body-wrapper">
+        <div class="top-pane">
+                <h1>Welcome to</h1>
+                <div class="logo-for-home-page">
+                    OP-OS-OD
+                </div><br>
+                <center style="font-size:12px;margin-top:0px;color:#A3A3A3">One Photo / One Story / One Day</center>
+            </div>
+
+
+        <div class="bottom-pane">
+            <a href="{% url 'signin' %}" class="button green">signin</a>
+            <a href="{% url 'signup' %}" class="button blue">signup</a>
+            OR
+                <a href="/facebook/connect/" class="button fb_blue">Facebook connect</a>
+        </div>
+
+        <div class="footer">
+           Copyright (c) at <a href="http://bquobe.com">Bquobe</a> infosystem (P) Ltd. | <a href='/help'>Help</a> | <a href=''>Privacy</a> 
+        </div>
+    </div>
+{% endblock %}

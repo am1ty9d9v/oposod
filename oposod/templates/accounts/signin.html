@@ -1,0 +1,36 @@
+{% extends 'users/base.html' %}
+{% block content %}
+<style type="text/css">
+h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+        ul.errorlist li {
+          margin-top: 10px;
+          margin-left: 25px;
+          margin-bottom:20px;
+
+
+        }
+</style>
+    <div style="width:600px;margin: 0 auto;">
+        <h1>Signin to explore OPOSOD</h1>
+        <div class="signin-form">
+            <form id="signin" action="" method="post">
+                    {% csrf_token %}
+                    {{ form.as_p}}
+                    <br>
+                    <center>
+                    <input type="submit" value="Sign In" class="button green"> Or New user?
+                    <a href="{% url 'signup' %}">Sign Up</a> | 
+                    <a href="{% url 'reset_password' %}">Forgot password?</a>
+                    </center>
+            </form>
+
+        </div>
+    </div>
+
+
+{% endblock %}

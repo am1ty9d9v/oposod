@@ -1,0 +1,120 @@
+{% load cropping %}
+
+{% if dailyphoto_obj_all %}
+
+<script>$(document).ready(function(){$(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});});</script>
+
+<section id="content">
+    <h1 style="text-align:center;font-family: 'Alegreya', serif;font-size: 20px;color: #929292;">
+        All Daily photos
+    </h1>
+    <hr>
+    <div id="container" style="width:100%;margin: 0 auto;margin-left:0px;" class="transitions-enabled infinite-scroll clearfix">
+        {% for i in dailyphoto_obj_all %}
+          <div id="box_{{i.id}}" class="box col3" style="position:relative;">
+            <a class="group3" href="{% url 'browse_daily_photo_single_lightbox' i.user.username i.key %}">
+                <img id="image_{{i.id}}" title="{{i.heading}}" src="{{MEDIA_URL}}{{i.photo}}_280" />
+            </a>
+            <p id="id_story_con_{{i.id}}" style="background:#fff;font-size:10px;padding: 10px 4px 4px 4px;text-align:justify;color:#fff;">
+                {{i.story|striptags|truncatewords:20|truncatechars:100}}
+            </p>
+
+           
+            {% if user.username == user_obj.username %}
+            <div title="Delete this photo" id="delete_daily_photo_{{i.id}}" style="cursor:pointer;position:absolute;margin-top:-17px;margin-lefT:263px;">
+                <img src="{{STATIC_URL}}images/delete-icon.png" />
+                <div class="dialog-confirm_{{i.id}}" title="Warning!!!" style="display:none;">
+                    <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you sure, you want to delete this photo?</p>
+                </div>
+            </div>
+            {% endif %}
+
+          </div>
+          {% if user.username == user_obj.username %}
+          <script type="text/javascript">
+            $(document).ready(function() {
+            
+                $(function(){
+
+                    var $container = $('#container');
+
+                    $container.imagesLoaded(function(){
+                      $container.masonry({
+                        itemSelector: '.box',
+                        columnWidth: 100
+                      });
+                    });
+                  });
+      
+      
+                $(".dialog-confirm_{{i.id}}").hide();
+                $("#delete_daily_photo_{{i.id}} img").hide();
+                $("#box_{{i.id}}").hover(function() {
+                    $("#delete_daily_photo_{{i.id}} img").show();
+                }, function() {
+                    $("#delete_daily_photo_{{i.id}} img").hide();
+                });
+                $("#delete_daily_photo_{{i.id}}").click(function() {
+                    $(".dialog-confirm_{{i.id}}").show();
+                    $( ".dialog-confirm_{{i.id}}" ).dialog({
+                        resizable: false,
+                        height:200,
+                        modal: true,
+                        buttons: {
+                            "Delete": function() {
+                                //$("#box_{{i.id}}").remove();
+                                $( this ).dialog( "close" );
+                                $.ajax({
+                                    type: 'GET',
+                                    url: '/delete-daily-photo/' + {{i.id}},
+                                    success: function() {
+                                        $("#box_{{i.id}}").remove();
+
+                                    }
+                                });
+                                
+                            },
+                            "Cancel": function() {
+                                $( this ).dialog( "close" );
+                                return false;
+                            }
+                        }
+                    });
+                    
+                });
+            });
+          </script>
+          {% endif %}
+        {% endfor %}
+    </div> <!-- #container -->
+
+
+
+  
+</section> <!-- #content -->
+
+
+
+
+
+
+{% else %}
+
+  {% if user.username == username %}
+    <h1 style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">You have no photos uploaded</h1>
+            <center>
+            <button class="btn"  onclick='location.href="{% url 'write_story' %}"'>Upload Photos Now</button>
+            </center>
+    {% else %}
+      <h1 style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">This user has no photos uploaded</h1>
+    {% endif %}
+
+
+    {% endif %}
+

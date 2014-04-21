@@ -1,0 +1,42 @@
+{% extends "users/base.html" %}
+{% load url from future %}
+{% block content %}
+    <style type="text/css">
+    .con403 h1 {
+            text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 100px;line-height: 1.2em;
+            color: #929292;
+            background: #f6f8f9;
+            padding: 20px;
+            margin-top: 20px;
+        }
+       .con403 p {
+            margin: 0 auto;
+    padding: 30px 0 0 0;
+
+
+    text-align: center;
+    width: 960px;
+    font-size: 60px;
+    font-family: 'Imprima', sans-serif;
+    font-weight:600;
+    margin: 0 auto;
+    color: #851C31;
+        }
+        .con403 h2 {
+        	font-size: 12px;
+        	text-align: center;
+        }
+</style>
+<div class="con403">
+<p>OP-OS-OD</p>
+<h1>403, Forbidden Error</h1>
+<h2>You don't have permission to visit this page</h2>
+<center style="margin-top:30px;">
+<form action="/search-oposod/">
+    <input id="search" name='q' style="margin-bottom: 60px;width:50%;" type="text" placeholder="Search Oposod..."/>
+</form>
+<a href="/" class="button blue">Home</a>
+</center></div>
+{% endblock %}

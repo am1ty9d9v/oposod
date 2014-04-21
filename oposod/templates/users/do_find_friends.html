@@ -1,0 +1,160 @@
+{% load cropping %}
+{% if friends_on_oposod_list %}
+<style type="text/css">
+
+    .friend-row {
+        width: 200px;
+        float: left;
+        clear: both; height: 150px;
+        margin-bottom: 30px;
+
+    }
+
+    .action {
+        width: 300px;
+        float: right; 
+        height: 150px;
+        margin-bottom: 30px;
+
+    }
+
+    #con {
+        width: 700px;
+        height: 300px;
+        margin: 0 auto;
+        margin-bottom: 30px;
+        clear:both;
+    }
+
+    button {
+        margin-top: 20px;
+    }
+</style>
+<h1>Your friends on OPOSOD</h1><hr>
+    <div id="con">
+        {% for fb_profile_obj in friends_on_oposod_list %}
+            <div class="friend-row">
+                {% for i in fb_profile_obj.user.profilephoto_set.all %}
+                    {% if i.is_set %}
+                        <a href="/{{fb_profile_obj.user.username}}"><img width='120px' height='90px' src="{% cropped_thumbnail i cropping %}"></a>
+                    {% endif %}
+                {% endfor %}
+                <p>{{fb_profile_obj.user.first_name}} {{fb_profile_obj.user.last_name}}</p>
+            </div>
+
+            <div class="action">
+                {% if user.id in fb_profile_obj.get_friends %}
+                    <button id="disconnect_{{fb_profile_obj.id}}" class="button blue">Connected</button>
+                {% else %}
+                        {% for i in fb_profile_obj.user.friendrequest_sender.all %}
+                            {% if i.recipient == user and not i.is_accepted %}
+                                 <button style="float:left;clear:both;" id="accept-request_{{fb_profile_obj.id}}" class="button blue">Accept</button>
+                                 <button style="float:right;" id="reject-request_{{fb_profile_obj.id}}" class="button green">Reject</button>
+                            
+                            {% endif %}
+                        {% endfor %}
+                    
+                        {% for i in fb_profile_obj.user.friendrequest_recipient.all %}
+                            {% if i.sender == user and not i.is_accepted %}
+                                 <button id="cancel_request_{{fb_profile_obj.id}}" class="button blue">Request pending</button>
+                           
+                            {% endif %}
+                        {% endfor %}
+               
+                        {% if not fb_profile_obj.user.friendrequest_recipient.all  and not fb_profile_obj.user.friendrequest_sender.all%}
+                            <button id="connect_{{fb_profile_obj.id}}" class="button blue">Connect</button>
+                        {% endif %}
+                        
+                    
+                {% endif %}
+
+
+            </div>
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    $("#disconnect_{{fb_profile_obj.id}}").hover(function() {
+                        $("#disconnect_{{fb_profile_obj.id}}").text("Disconnect?");
+                    }, function() {
+                        $("#disconnect_{{fb_profile_obj.id}}").text("Connected");
+                    });
+
+                    $("#cancel_request_{{fb_profile_obj.id}}").hover(function() {
+                        $("#cancel_request_{{fb_profile_obj.id}}").text("Cancel request?");
+                    }, function() {
+                        $("#cancel_request_{{fb_profile_obj.id}}").text("Request pending");
+                    });
+
+                    $("#disconnect_{{fb_profile_obj.id}}").click(function() {
+                        document.getElementById("disconnect_{{fb_profile_obj.id}}").setAttribute("disabled","true");
+                        $("#disconnect_{{fb_profile_obj.id}}").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                        $.ajax({
+                            type : 'GET',
+                            url : '/delete-from-friends/' + {{fb_profile_obj.id}},
+                            success: function() {
+                                $("#disconnect_{{fb_profile_obj.id}}").text("Disconnected");
+                            }
+                        });
+                    });
+
+                    $('#connect_{{fb_profile_obj.id}}').click(function() {
+                        document.getElementById("connect_{{fb_profile_obj.id}}").setAttribute("disabled","true");
+                        $('#connect_{{fb_profile_obj.id}}').html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                        $.ajax({
+                            type : 'GET',
+                            url : '/send-friend-request/' + {{fb_profile_obj.id}},
+                            success: function() {
+                                $('#connect_{{fb_profile_obj.id}}').text("Request sent");
+                            }
+                        });
+                    });
+
+                    $("#accept-request_{{fb_profile_obj.id}}").click(function() {
+                        $("#accept-request_{{fb_profile_obj.id}}").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                        document.getElementById("accept-request_{{fb_profile_obj.id}}").setAttribute("disabled","true");
+                        $("#reject-request_{{fb_profile_obj.id}}").hide();
+                        $.ajax({
+                            type : 'GET',
+                            url : '/accept-friend-request/' + {{fb_profile_obj.id}},
+                            success: function() {
+                                $("#accept-request_{{fb_profile_obj.id}}").text("Connected");
+                            }
+                        });
+                    });
+
+                    $("#reject-request_{{fb_profile_obj.id}}").click(function() {
+                        $("#accept-request_{{fb_profile_obj.id}}").hide();
+                        document.getElementById("reject-request_{{fb_profile_obj.id}}").setAttribute("disabled","true");
+                        $("#reject-request_{{fb_profile_obj.id}}").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                        $.ajax({
+                            type : 'GET',
+                            url : '/reject-friend-request/' + {{fb_profile_obj.id}},
+                            success: function() {
+                                $("#reject-request_{{fb_profile_obj.id}}").text("Rejected");
+
+                            }
+                        });
+                    });
+
+                    $("#cancel_request_{{fb_profile_obj.id}}").click(function() {
+                        document.getElementById("cancel_request_{{fb_profile_obj.id}}").setAttribute("disabled","true");
+                        $("#cancel_request_{{fb_profile_obj.id}}").html('<img src="{{STATIC_URL}}images/loading.gif" />');
+                       
+                        $.ajax({
+                            type : 'GET',
+                            url : '/cancel-friend-request/' + {{fb_profile_obj.id}},
+                            success: function() {
+                                $("#cancel_request_{{fb_profile_obj.id}}").text("Cancelled ");
+                            }
+                        });
+                    });
+
+                }); 
+            </script>
+
+        {% endfor %}
+    </div>
+   
+{% else %}
+
+    <h1>You have no facebook friends on OPOSOD.</h1>
+{% endif %}

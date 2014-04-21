@@ -1,0 +1,121 @@
+
+{% load cropping %}
+
+{% load url from future %}
+<script> $(document).ready(function(){$(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", trapFocus:true,width:"85%", height:"100%"}); }); </script> 
+<style type="text/css">
+         h2 {
+            
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;
+        }
+        #outer-wrapper {
+            width: 100%;
+            margin: 0 auto;
+            margin-top: 10px;
+            margin-bottom: 100px;
+            overflow-x: hidden;
+
+        }
+        .main-container {
+            width: 100%;
+            padding: 10px 10px 10px 10px;
+            border: 2px solid #fff;
+            height: 170px;
+            margin-bottom: 10px;
+        }
+
+        .story-container {
+            width: 100%;
+            float: left;
+            clear: both;
+            margin: 0 auto;
+            overflow-x: hidden;
+        }
+        .photo {
+            width: 100%;
+        }
+        .photo img {
+            max-width: 200px;
+            width:100%;
+            max-height: 160px;
+            height: 100%;
+            float: left;
+            clear: both;
+        }
+
+        .story {
+            width: 50%;
+            float: right;
+        }
+
+       
+
+        .user img {
+            width: 60px;
+            height: 60px;
+        }
+
+
+    </style>
+    <div id="outer-wrapper">
+       
+
+    {% if user.username == username %}
+
+
+        <br>
+       
+
+    {% endif %}
+
+    <center><h2>All stories.</h2></center><hr>
+        {% if df_obj %}
+            {% for dailyphoto in df_obj %}
+                <div class="main-container">
+                    <div class="story-container">
+                        <div class="photo">
+
+                            <a class="group3" title="{{dailyphoto.heading}}" href="{% url 'browse_daily_photo_single_lightbox' dailyphoto.user.username dailyphoto.key %}"><img src="{{MEDIA_URL}}{{dailyphoto.photo}}_200x160"></a>
+
+
+                        </div>
+
+                        <div class="story" style="margin-right:30px;">
+                           <h2 style="font-size:20px;">{{dailyphoto.heading|truncatechars:30}}</h2>
+                           <hr >
+                            <p>{{dailyphoto.story|striptags|truncatewords_html:50|truncatechars:200}}</p>
+                        </div>
+                    </div>
+                    
+
+                </div>
+                <hr>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center;
+            font-family: 'Alegreya', serif;
+            font-size: 20px;
+            color: #929292;">No activity here.</p>
+        {% endif %}
+
+    </div>
+    <script type="text/javascript">
+         function write_story() {
+            var xmlhttp;
+
+            if(window.XMLHttpRequest) {
+                xmlhttp = new XMLHttpRequest();
+            }
+            xmlhttp.onreadystatechange = function() {
+                if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    document.getElementById("write-story").innerHTML = xmlhttp.responseText;
+                }
+            }
+            xmlhttp.open("GET", '/upload-new-story' , true);
+            xmlhttp.send();
+        }
+    </script>
+
+

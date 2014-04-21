@@ -1,0 +1,67 @@
+<!--<html>
+  <head>
+  <title>My Great Website</title>
+  </head>
+  <body>
+  <div id="fb-root"></div>
+  <script src="http://connect.facebook.net/en_US/all.js">
+  </script>
+  <script>
+    FB.init({ 
+      appId:'174132749424485', cookie:true, 
+      status:true, xfbml:true 
+    });
+
+    FB.ui({ method: 'apprequests', 
+      message: 'Hey checkout this new website named oposod.com'});
+  </script>
+  </body>
+</html>
+
+
+
+<html xmlns:fb="http://www.facebook.com/2008/fbml">
+  <body>
+    <script src="http://connect.facebook.net/en_US/all.js"></script>
+    <div id="fb-root"></div>
+    <script>
+      // assume we are already logged in
+      FB.init({appId: '174132749424485', xfbml: true, cookie: true});
+
+      FB.ui({
+          method: 'send',
+          name: 'People Argue Just to Win',
+          link: 'http://www.nytimes.com/2011/06/15/arts/people-argue-just-to-win-scholars-assert.html',
+          });
+     </script>
+  </body>
+</html>
+
+-->
+
+<html>
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+</head>
+<body>
+<div>
+  Recipient's FB username:
+  <input type="text" id="fb-recipient" placeholder="Recipient's FB username" />
+  <input type="submit" id="fb-recipient-submit" value="Pick" />
+</div>
+  <iframe id="fb-feed-dialog" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+<script>
+  $('#fb-recipient-submit').click(function(e){
+    e.preventDefault();
+    var feedUrl = 'https://www.facebook.com/dialog/feed?';
+    feedUrl += 'display=iframe';
+    feedUrl += '&app_id=' + '174132749424485';
+    feedUrl += '&access_token=' + 'CAACeX3CsV2UBAJmyauEjh64ZCNQ2dHukMtuZClQEyCtMcNVaaGgMrcqpPTforZBZCaJjAWOmUULABL0ibZAg7w6TYZCuIObnAXnuxoiL8K6ZClrQ6mZCvMmGID5ZAB9KwPZAO92ZCebiC6OcZBZA1iKh302g3HoNaGSi5ZC8AZD';
+    feedUrl += '&link=' + 'http://bqb.com:8000';
+    feedUrl += '&redirect_uri=' + 'http://bqb.com:8000';
+    feedUrl += '&to=' + $('#fb-recipient').val();
+    $('#fb-feed-dialog').attr( 'src', feedUrl );
+  });
+</script>
+</body>
+</html>
