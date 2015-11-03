@@ -29,14 +29,11 @@ IMAGE_SIZE_PROFILE_PHOTO = ['25x25', '40x40', '170x170', '100x100']
 IMAGE_SIZE_COVER_PHOTO = ['']
 
 RESCTRICTED_WORDS = ['home', 'user', 'users', 'homes', 'settings', 'setting',
-                     'time', 'money', 'whore', 'porn', 'sex', 'edit',
+                     'time', 'money', 'porn', 'sex', 'edit',
                      'profile', 'calendars', 'calendar', 'stories', 'story',
                      'signin', 'login', 'signout', 'logout', 'upload', 'video',
                      'photo', 'images', 'photos', 'image', 'oposod', 'browse',
-                     'privacy', 'facebook', 'twitter', 'plus', 'admin', 'tit',
-                     'request', 'accept', 'cancel', 'reject', 'connect',
-                     'disconnect', 'help', 'static', 'media', 'fuck', 'vagina',
-                     'penis', 'boobs', 'boob', 'tits', 'breast', 'google']
+                     'privacy', 'facebook', 'twitter', 'plus', 'admin']
 ADMINS = (
     ('Gurpreet Singh', 'gurpreet.singh@bquobe.com'),
     ('Amit Yadav', 'amityadav@amityadav.in')
