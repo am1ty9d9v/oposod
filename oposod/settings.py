@@ -22,6 +22,7 @@ TEMPLATE_CONTEXT_PROCESSORS = TCP + (
     'django_facebook.context_processors.facebook',
     'django.core.context_processors.tz',
 )
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 IMAGE_SIZE_DAILY_PHOTO = ['200x160', '100x100']
@@ -44,7 +45,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'oposod',
-        'USER': 'amit',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -65,6 +67,7 @@ TIME_ZONE = 'Asia/Kolkata'
 LANGUAGE_CODE = 'en-us'
 
 SITE_ID = 1
+SITE = "http://localhost:9090"
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -155,7 +158,8 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
 
-    'haystack',
+    #'haystack',
+    'south',
 
     'bootstrap_toolkit',
     'users',
@@ -166,8 +170,8 @@ INSTALLED_APPS = (
     'django_extensions',
     'djorm_pgarray',
     'djorm_expressions',
-    'django_facebook',
-    'open_facebook',
+    #'django_facebook',
+    #'open_facebook',
 
 )
 
@@ -206,3 +210,8 @@ LOGGING = {
         },
     }
 }
+
+FACEBOOK_APP_ID = '12121212'
+FACEBOOK_APP_SECRET = 'adafas'
+EMAIL_HOST_USER = ""
+
