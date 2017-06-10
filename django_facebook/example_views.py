@@ -134,9 +134,8 @@ def image_upload(request):
                    'wall image %s' % picture)
 
         messages.info(request, 'The images have been added to your profile!')
-	
+
         return next_redirect(request)
-	return HttpResponse('f')
 
 
 @facebook_required(scope='publish_actions')

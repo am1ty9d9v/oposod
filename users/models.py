@@ -1,13 +1,14 @@
-#from django.conf import settings
+import os
+import uuid
+import random
+
 from django.contrib.auth.models import User
 from django.db import models
-from django_extensions.utils import uuid
 from djorm_expressions.models import ExpressionManager
 from djorm_pgarray.fields import ArrayField
 from image_cropping.fields import ImageRatioField, ImageCropField
+
 from oposod.settings import MEDIA_ROOT
-import os
-import random
 
 
 class Profile(models.Model):
@@ -59,6 +60,7 @@ class CoverPhoto(models.Model):
             ext = 'jpg'
         filename = "%s.%s" % (uuid.uuid4(), ext)
         return os.path.join(self.cover_photo_path, filename)
+
     cover_photo = models.ImageField(upload_to=get_upload_path)
     uploaded_on = models.DateTimeField()
     key = models.CharField(max_length=90)
@@ -85,6 +87,7 @@ class DailyPhoto(models.Model):
             ext = 'jpg'
         filename = "%s.%s" % (uuid.uuid4(), ext)
         return os.path.join(self.photo_path, filename)
+
     photo = models.ImageField(upload_to=get_upload_path)
     moods = models.CharField(max_length=20, null=True)
     heading = models.TextField(null=True)

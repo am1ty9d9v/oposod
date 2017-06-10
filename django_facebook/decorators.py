@@ -21,6 +21,7 @@ class FacebookRequired(object):
     and upon a permission error redirect to login_url
     Querying the permissions would slow down things
     """
+
     def __init__(self, fn, scope=None, canvas=False, page_tab=False, extra_params=None):
         self.fn = fn
         scope = fb_settings.FACEBOOK_DEFAULT_SCOPE if scope is None else scope
@@ -135,10 +136,10 @@ class FacebookRequired(object):
     def execute_view(self, view_func, *args, **kwargs):
         try:
             result = view_func(*args, **kwargs)
-        except TypeError, e:
+        except TypeError as e:
             # this might be another error type error, raise it
             # the only way I know to check this is the message :(
-            if 'graph' not in e.message:
+            if 'graph' not in str(e):
                 raise
             graph = kwargs.pop('graph', None)
             result = view_func(*args, **kwargs)
@@ -160,6 +161,7 @@ class FacebookRequiredLazy(FacebookRequired):
 
     Use this in combination with require_persistent_graph
     """
+
     def authenticate(self, fn, request, *args, **kwargs):
         redirect_uri = self.get_redirect_uri(request)
         oauth_url = get_oauth_url(
@@ -176,7 +178,7 @@ class FacebookRequiredLazy(FacebookRequired):
             # using this
             response = self.execute_view(
                 fn, request, graph=graph, *args, **kwargs)
-        except open_facebook_exceptions.OpenFacebookException, e:
+        except open_facebook_exceptions.OpenFacebookException as e:
             permission_granted = has_permissions(graph, self.scope_list)
             if permission_granted:
                 # an error if we already have permissions

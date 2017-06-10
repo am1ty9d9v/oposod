@@ -1,26 +1,14 @@
-{% extends "users/base.html" %}
-{% block content %}
-<style type="text/css">
-    input[type=text] {
-        width: 580px;
-        margin-top: -1px;
-    }
-    label {
-        margin-bottom: 5px;
-    }
+<html>
 
-    ul.errorlist li{
-        margin-top: 10px;
-        margin-bottom: 20px;
-        margin-left: 25px;
-    }
-  </style>
-<div style="width:600px;margin: 0 auto;">
-<form action="" method="post">
-    {% csrf_token %}
-    {{form.as_p}}
-    <br>
-    <button type="submit" class="green button">Save</button>
-</form>
-</div>
+{% block title %}Register for an account{% endblock %}
+{% block body %}
+<table>
+    <form method='post' action=''>{% csrf_token %}
+        {{ form }}
+        <tr><td></td><td><input type="submit" value="Send activation email" /></td>
+    </form>
+</table>
 {% endblock %}
+</html>
+
+

@@ -1,13 +1,20 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-from urlparse import urlparse
-from open_facebook.api import FacebookAuthorization, OpenFacebook
-from django_facebook.canvas import generate_oauth_url
-from django_facebook.utils import ScriptRedirect
-from django_facebook.connect import connect_user
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
+
 from django.contrib.auth import logout
+from django.utils import six
+
+from open_facebook.api import FacebookAuthorization, OpenFacebook
+
 from django_facebook import settings
+from django_facebook.canvas import generate_oauth_url
+from django_facebook.connect import connect_user
 from django_facebook.exceptions import MissingPermissionsError
+from django_facebook.utils import ScriptRedirect
 
 
 class FacebookCanvasMiddleWare(object):
@@ -38,18 +45,22 @@ class FacebookCanvasMiddleWare(object):
             No signed_request is sent.
             Return
         """
-        
+
         # This call cannot be global'ized or Django will return an empty response
         # after the first one
         redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
-                                      show_body=False)
+                                              show_body=False)
         # check referer to see if this is the first access
         # or it's part of navigation in app
         # facebook always sends a POST reuqest
         referer = request.META.get('HTTP_REFERER', None)
         if referer:
             urlparsed = urlparse(referer)
-            if not urlparsed.netloc.endswith('facebook.com'):
+            is_facebook = urlparsed.netloc.endswith('facebook.com')
+            # facebook redirect
+            if is_facebook and urlparsed.path.endswith('/l.php'):
+                return
+            if not is_facebook:
                 return
             # when there is an error, we attempt to allow user to
             # reauthenticate
@@ -65,7 +76,10 @@ class FacebookCanvasMiddleWare(object):
             parsed_signed_request = FacebookAuthorization.parse_signed_data(
                 signed_request)
             access_token = parsed_signed_request['oauth_token']
-            facebook_id = long(parsed_signed_request['user_id'])
+            if six.PY2:
+                facebook_id = long(parsed_signed_request['user_id'])
+            else:
+                facebook_id = int(parsed_signed_request['user_id'])
         except:
             # redirect to authorization dialog
             # if app not authorized by user

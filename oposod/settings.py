@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'djorm_pgarray',
     'djorm_expressions',
-    # 'django_facebook',
+    'django_facebook',
     # 'open_facebook',
 
 ]
@@ -151,12 +151,12 @@ RESCTRICTED_WORDS = ['home', 'user', 'users', 'homes', 'settings', 'setting',
 
 SITE = "http://localhost:9090"
 
-from easy_thumbnails.conf import settings as thumbnail_settings
-THUMBNAIL_PROCESSORS = (
-                           'image_cropping.thumbnail_processors.crop_corners',
-                       ) + thumbnail_settings.THUMBNAIL_PROCESSORS
-import django.template
-django.template.add_to_builtins('django.templatetags.future')
+# from easy_thumbnails.conf import settings as thumbnail_settings
+# THUMBNAIL_PROCESSORS = (
+#                            'image_cropping.thumbnail_processors.crop_corners',
+#                        ) + thumbnail_settings.THUMBNAIL_PROCESSORS
+# import django.template
+# django.template.add_to_builtins('django.templatetags.future')
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

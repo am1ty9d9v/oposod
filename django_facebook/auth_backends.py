@@ -6,6 +6,11 @@ from django_facebook.utils import get_profile_model, is_user_attribute, \
     get_user_model
 import operator
 
+try:
+    reduce = reduce
+except NameError:
+    from functools import reduce
+
 
 class FacebookBackend(backends.ModelBackend):
 
@@ -22,7 +27,7 @@ class FacebookBackend(backends.ModelBackend):
 
     '''
 
-    def authenticate(self, *args, **kwargs):
+    def authenticate(self, facebook_id=None, facebook_email=None):
         '''
         Route to either the user or profile table depending on which type of user
         customization we are using
@@ -30,9 +35,9 @@ class FacebookBackend(backends.ModelBackend):
         '''
         user_attribute = is_user_attribute('facebook_id')
         if user_attribute:
-            user = self.user_authenticate(*args, **kwargs)
+            user = self.user_authenticate(facebook_id, facebook_email)
         else:
-            user = self.profile_authenticate(*args, **kwargs)
+            user = self.profile_authenticate(facebook_id, facebook_email)
         return user
 
     def user_authenticate(self, facebook_id=None, facebook_email=None):

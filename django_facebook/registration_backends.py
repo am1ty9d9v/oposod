@@ -15,14 +15,30 @@ class NooptRegistrationBackend(object):
     Noopt backends forms the basis of support for backends
     which handle the actual registration in the registration form
     '''
+
     def get_form_class(self, request):
+        '''
+        Returns the form class to use for registration
+
+        :param request: the request object
+        '''
         return FacebookRegistrationFormUniqueEmail
 
     def get_registration_template(self):
+        '''
+        Returns the template to use for registration
+        '''
         template = facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
         return template
 
     def register(self, request, form=None, **kwargs):
+        '''
+        Implement your registration logic in this method
+
+        :param request: the request object
+        :param form: the form with the users data
+        :param kwargs: additional data
+        '''
         pass
 
     def activate(self, **kwargs):
@@ -68,6 +84,7 @@ class FacebookRegistrationBackend(NooptRegistrationBackend):
     It is extremly simple and doesn't handle things like redirects etc
     (These are already handled by Django Facebook)
     """
+
     def register(self, request, form=None, **kwargs):
         """
         Create and immediately log in a new user.
@@ -111,13 +128,13 @@ class UserenaBackend(NooptRegistrationBackend):
         return SignupForm
 
     def get_registration_template(self):
-        template = 'userena/signup_form.html'
+        if facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE == facebook_settings.default_registration_template:
+            template = 'userena/signup_form.html'
         return template
 
 
 class OldDjangoRegistrationBackend(NooptRegistrationBackend):
 
-    # def get_form_class(self, request):
-    #     from registration.forms import RegistrationFormUniqueEmail
-    #     return RegistrationFormUniqueEmail
-    pass
+    def get_form_class(self, request):
+        from registration.forms import RegistrationFormUniqueEmail
+        return RegistrationFormUniqueEmail

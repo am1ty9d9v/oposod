@@ -15,7 +15,11 @@ from django_facebook.utils import get_registration_backend, get_form_class, \
 from random import randint
 import logging
 import sys
-import urllib2
+import urllib
+try:
+    import urllib2
+except ImportError:
+    import urllib.error as urllib2
 
 
 logger = logging.getLogger(__name__)
@@ -87,13 +91,16 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
             try:
                 user = _register_user(request, converter,
                                       remove_old_connections=force_registration)
-            except facebook_exceptions.AlreadyRegistered, e:
+            except facebook_exceptions.AlreadyRegistered as e:
                 # in Multithreaded environments it's possible someone beats us to
                 # the punch, in that case just login
                 logger.info(
                     'parallel register encountered, slower thread is doing a login')
                 auth_user = authenticate(
                     facebook_id=facebook_data['id'], **kwargs)
+                if not auth_user:
+                    # We don't have a valid user so raise
+                    raise e
                 action = CONNECT_ACTIONS.LOGIN
                 user = _login_user(request, converter, auth_user, update=False)
 
@@ -148,14 +155,14 @@ def _update_likes_and_friends(request, user, facebook):
         if facebook_settings.FACEBOOK_STORE_FRIENDS:
             facebook.get_and_store_friends(user)
         transaction.savepoint_commit(sid)
-    except IntegrityError, e:
+    except IntegrityError as e:
         logger.warn(u'Integrity error encountered during registration, '
                     'probably a double submission %s' % e,
                     exc_info=sys.exc_info(), extra={
-                    'request': request,
-                    'data': {
-                        'body': unicode(e),
-                    }
+                        'request': request,
+                        'data': {
+                            'body': unicode(e),
+                        }
                     })
         transaction.savepoint_rollback(sid)
 
@@ -222,9 +229,10 @@ def _register_user(request, facebook, profile_callback=None,
                       initial={'ip': request.META['REMOTE_ADDR']})
 
     if not form.is_valid():
-        error_message_format = u'Facebook data %s gave error %s'
-        error_message = error_message_format % (facebook_data, form.errors)
-        error = facebook_exceptions.IncompleteProfileError(error_message)
+        # show errors in sentry
+        form_errors = form.errors
+        error = facebook_exceptions.IncompleteProfileError(
+            'Facebook signup incomplete')
         error.form = form
         raise error
 
@@ -238,17 +246,16 @@ def _register_user(request, facebook, profile_callback=None,
         if new_user is None:
             raise ValueError(
                 'new_user is None, note that backward compatability for the older versions of django registration has been dropped.')
-    except IntegrityError, e:
+    except IntegrityError as e:
         # this happens when users click multiple times, the first request registers
         # the second one raises an error
         raise facebook_exceptions.AlreadyRegistered(e)
 
-    signals.facebook_user_registered.send(sender=get_user_model(),
-                                          user=new_user, facebook_data=facebook_data, request=request)
-
     # update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
 
+    signals.facebook_user_registered.send(sender=get_user_model(),
+                                          user=new_user, facebook_data=facebook_data, request=request, converter=facebook)
     # IS this the correct way for django 1.3? seems to require the backend
     # attribute for some reason
     new_user.backend = 'django_facebook.auth_backends.FacebookBackend'
@@ -344,7 +351,8 @@ def _update_user(user, facebook, overwrite=True):
     if facebook_settings.FACEBOOK_STORE_LOCAL_IMAGE:
         image_field = get_user_attribute(user, profile, 'image', True)
         if not image_field:
-            image_name, image_file = _update_image(profile, image_url)
+            image_name, image_file = _update_image(
+                facebook_data['facebook_id'], image_url)
             image_field.save(image_name, image_file)
 
     # save both models if they changed
@@ -368,12 +376,18 @@ def _update_image(facebook_id, image_url):
     '''
     image_name = 'fb_image_%s.jpg' % facebook_id
     image_temp = NamedTemporaryFile()
-    image_response = urllib2.urlopen(image_url)
+    try:
+        image_response = urllib2.urlopen(image_url)
+    except AttributeError:
+        image_response = urllib.request.urlopen(image_url)
     image_content = image_response.read()
     image_temp.write(image_content)
     http_message = image_response.info()
     image_size = len(image_content)
-    content_type = http_message.type
+    try:
+        content_type = http_message.type
+    except AttributeError:
+        content_type = http_message.get_content_type()
     image_file = InMemoryUploadedFile(
         file=image_temp, name=image_name, field_name='image',
         content_type=content_type, size=image_size, charset=None

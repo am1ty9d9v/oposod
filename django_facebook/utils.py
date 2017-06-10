@@ -1,4 +1,4 @@
-from django.utils.decorators import available_attrs
+from django.utils import six
 from functools import wraps
 try:
     # using compatible_datetime instead of datetime only
@@ -150,8 +150,8 @@ def try_get_profile(user):
 
 def hash_key(key):
     import hashlib
-    hashed = hashlib.md5(key).hexdigest()
-    return hashed
+    key = key.encode('utf-8')
+    return hashlib.md5(key).hexdigest()
 
 
 def parse_signed_request(signed_request_string):
@@ -174,7 +174,7 @@ def get_url_field():
     field = URLField()
     try:
         field = URLField(verify_exists=False)
-    except TypeError, e:
+    except TypeError as e:
         pass
     return field
 
@@ -196,7 +196,7 @@ def has_permissions(graph, scope_list):
     try:
         if graph:
             permissions_granted = graph.has_permissions(scope_list)
-    except open_facebook_exceptions.OAuthException, e:
+    except open_facebook_exceptions.OAuthException as e:
         pass
     return permissions_granted
 
@@ -248,6 +248,7 @@ class ScriptRedirect(HttpResponse):
     '''
     Redirect for Facebook Canvas pages
     '''
+
     def __init__(self, redirect_to, show_body=True):
         self.redirect_to = redirect_to
         self.location = iri_to_uri(redirect_to)
@@ -312,7 +313,7 @@ def next_redirect(request, default='/', additional_params=None,
     return HttpResponseRedirect(redirect_url)
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
                        global_defaults):
     '''
@@ -332,15 +333,22 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
     given_ids = map(unicode, default_dict.keys())
     # both ends of the comparison are in unicode ensuring the not in works
     new_ids = [g for g in given_ids if g not in current_ids]
-    inserted_model_instances = []
+    prepared_models = []
     for new_id in new_ids:
         defaults = default_dict[new_id]
         defaults[id_field] = new_id
         defaults.update(global_defaults)
-        model_instance = model_class.objects.create(
+        model_instance = model_class(
             **defaults
         )
-        inserted_model_instances.append(model_instance)
+        prepared_models.append(model_instance)
+    # efficiently create these objects all at once
+    # django 1.4 only
+    if hasattr(model_class.objects, 'bulk_create'):
+        model_class.objects.bulk_create(prepared_models)
+    else:
+        [m.save() for m in prepared_models]
+    inserted_model_instances = prepared_models
     # returns a list of existing and new items
     return current_instances, inserted_model_instances
 
@@ -407,7 +415,7 @@ def get_django_registration_version():
 
     try:
         import registration
-    except ImportError, e:
+    except ImportError as e:
         version = None
 
     return version
@@ -423,7 +431,7 @@ def parse_scope(scope):
     ['email','user_about_me']
     '''
     assert scope, 'scope is required'
-    if isinstance(scope, basestring):
+    if isinstance(scope, six.string_types):
         scope_list = scope.split(',')
     elif isinstance(scope, (list, tuple)):
         scope_list = list(scope)
@@ -437,6 +445,8 @@ def simplify_class_decorator(class_decorator):
     '''
     Makes the decorator syntax uniform
     Regardless if you call the decorator like
+
+    **Decorator examples**::
         @decorator
         or
         @decorator()
@@ -447,10 +457,13 @@ def simplify_class_decorator(class_decorator):
     http://www.artima.com/weblogs/viewpost.jsp?thread=240845
 
     This function makes sure that your decorator class always gets called with
-    __init__(fn, *option_args, *option_kwargs)
-    __call__()
-        return a function which accepts the *args and *kwargs intended
-        for fn
+
+    **Methods called**::
+
+        __init__(fn, *option_args, *option_kwargs)
+        __call__()
+            return a function which accepts the *args and *kwargs intended
+            for fn
     '''
     # this makes sure the resulting decorator shows up as
     # function FacebookRequired instead of outer
@@ -488,7 +501,7 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
     '''
     if regexp is True:
         regexp = re.compile('(\d+)')
-    elif isinstance(regexp, basestring):
+    elif isinstance(regexp, six.string_types):
         regexp = re.compile(regexp)
     elif hasattr(regexp, 'search'):
         pass
@@ -638,17 +651,39 @@ def get_class_for(purpose):
     '''
     mapping = get_class_mapping()
     class_ = mapping[purpose]
-    if isinstance(class_, basestring):
+    if isinstance(class_, six.string_types):
         class_ = get_class_from_string(class_)
     return class_
 
 
 def get_instance_for(purpose, *args, **kwargs):
     '''
-    Usage:
-    conversion_instance = get_instance_for(
-        'facebook_user_conversion', user=user)
+    **Usage**::
+
+        conversion_instance = get_instance_for(
+            'facebook_user_conversion', user=user)
     '''
     class_ = get_class_for(purpose)
     instance = class_(*args, **kwargs)
     return instance
+
+
+def get_migration_data():
+    '''
+    Support for Django custom user models
+    See this blog post for inspiration
+
+    http://kevindias.com/writing/django-custom-user-models-south-and-reusable-apps/
+    https://github.com/stephenmcd/mezzanine/blob/master/mezzanine/core/migrations/0005_auto__chg_field_sitepermission_user__del_unique_sitepermission_user.py
+    '''
+
+    try:
+        from django.contrib.auth import get_user_model
+    except ImportError:  # django < 1.5
+        from django.contrib.auth.models import User
+    else:
+        User = get_user_model()
+
+    user_orm_label = '%s.%s' % (User._meta.app_label, User._meta.object_name)
+    user_model_label = '%s.%s' % (User._meta.app_label, User._meta.module_name)
+    return User, user_orm_label, user_model_label

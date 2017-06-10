@@ -1,22 +1,20 @@
-from django.forms.util import ValidationError
-import json
-from django_facebook import settings as facebook_settings
-from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
-    get_profile_model, parse_signed_request, hash_key, try_get_profile, \
-    get_user_attribute
-from open_facebook.exceptions import OpenFacebookException
+from django.forms import ValidationError
+from django_facebook import settings as facebook_settings, signals
 from django_facebook.exceptions import FacebookException
+from django_facebook.utils import get_user_model, mass_get_or_create, \
+    cleanup_oauth_url, get_profile_model, parse_signed_request, hash_key, \
+    try_get_profile, get_user_attribute
+from open_facebook import exceptions as open_facebook_exceptions
+from open_facebook.exceptions import OpenFacebookException
+from open_facebook.utils import send_warning, validate_is_instance
+import datetime
+import json
+import logging
 try:
     from dateutil.parser import parse as parse_date
 except ImportError:
     from django_facebook.utils import parse_like_datetime as parse_date
-from django_facebook.utils import get_user_model
 
-import datetime
-import logging
-from open_facebook import exceptions as open_facebook_exceptions
-from open_facebook.utils import send_warning, validate_is_instance
-from django_facebook import signals
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +31,18 @@ def require_persistent_graph(request, *args, **kwargs):
     return graph
 
 
+def require_facebook_graph(request, *args, **kwargs):
+    '''
+    Just like get_facebook graph, but instead of returning None
+    raise an OpenFacebookException if we can't access facebook
+    '''
+    kwargs['raise_'] = True
+    graph = get_facebook_graph(request, *args, **kwargs)
+    if not graph:
+        raise OpenFacebookException('please authenticate')
+    return graph
+
+
 def get_persistent_graph(request, *args, **kwargs):
     '''
     Wraps itself around get facebook graph
@@ -42,6 +52,7 @@ def get_persistent_graph(request, *args, **kwargs):
     for permanent usage
     Atleast not without asking for the offline_access permission
     '''
+    from open_facebook.api import OpenFacebook
     if not request:
         raise(ValidationError,
               'Request is required if you want to use persistent tokens')
@@ -61,17 +72,18 @@ def get_persistent_graph(request, *args, **kwargs):
 
     if not graph:
         # search for the graph in the session
-        cached_graph = request.session.get('graph')
-        if cached_graph:
-            cached_graph._me = None
-            graph = cached_graph
+        cached_graph_dict = request.session.get('graph_dict')
+        if cached_graph_dict:
+            graph = OpenFacebook()
+            graph.__setstate__(cached_graph_dict)
+            graph._me = None
 
     if not graph or require_refresh:
         # gets the new graph, note this might do token conversions (slow)
         graph = get_facebook_graph(request, *args, **kwargs)
         # if it's valid replace the old cache
         if graph is not None and graph.access_token:
-            request.session['graph'] = graph
+            request.session['graph_dict'] = graph.__getstate__()
 
     # add the current user id and cache the graph at the request level
     _add_current_user_id(graph, request.user)
@@ -187,7 +199,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                         # would use cookies instead, but django's cookie setting
                         # is a bit of a mess
                         cache.set(cache_key, access_token, 60 * 60 * 2)
-                    except (open_facebook_exceptions.OAuthException, open_facebook_exceptions.ParameterException), e:
+                    except (open_facebook_exceptions.OAuthException, open_facebook_exceptions.ParameterException) as e:
                         # this sometimes fails, but it shouldnt raise because
                         # it happens when users remove your
                         # permissions and then try to reauthenticate
@@ -248,6 +260,7 @@ class FacebookUserConverter(object):
     - invite flows
     - importing and storing likes
     '''
+
     def __init__(self, open_facebook):
         from open_facebook.api import OpenFacebook
         self.open_facebook = open_facebook
@@ -267,7 +280,7 @@ class FacebookUserConverter(object):
         try:
             user_data = self._convert_facebook_data(
                 facebook_profile_data, username=username)
-        except OpenFacebookException, e:
+        except OpenFacebookException as e:
             self._report_broken_facebook_data(
                 user_data, facebook_profile_data, e)
             raise
@@ -362,7 +375,10 @@ class FacebookUserConverter(object):
         import re
         text_url_field = text_url_field.encode('utf8')
         seperation = re.compile('[ ,;\n\r]+')
-        parts = seperation.split(text_url_field)
+        try:
+            parts = seperation.split(text_url_field)
+        except TypeError:
+            parts = seperation.split(text_url_field.decode())
         for part in parts:
             from django_facebook.utils import get_url_field
             url_check = get_url_field()
@@ -380,6 +396,10 @@ class FacebookUserConverter(object):
         import string
         from random import choice
         size = 9
+        try:
+            string.letters
+        except AttributeError:
+            string.letters = string.ascii_letters
         password = ''.join([choice(string.letters + string.digits)
                             for i in range(size)])
         return password.lower()
@@ -426,9 +446,10 @@ class FacebookUserConverter(object):
         '''
         Check the database and add numbers to the username to ensure its unique
         '''
-        usernames = list(get_user_model().objects.filter(
-            username__istartswith=base_username).values_list(
-                'username', flat=True))
+        usernames = list(
+            get_user_model().objects.filter(
+                username__istartswith=base_username
+            ).values_list('username', flat=True))
         usernames_lower = [str(u).lower() for u in usernames]
         username = str(base_username)
         i = 1
@@ -452,7 +473,7 @@ class FacebookUserConverter(object):
         if link:
             username = link.split('/')[-1]
             username = cls._make_username(username)
-            if 'profilephp' in username:
+            if username and 'profilephp' in username:
                 username = None
 
         # try the email adress next
@@ -475,7 +496,8 @@ class FacebookUserConverter(object):
         Slugify the username and replace - with _ to meet username requirements
         '''
         from django.template.defaultfilters import slugify
-        slugified_name = slugify(username).replace('-', '_')
+        from unidecode import unidecode
+        slugified_name = slugify(unidecode(username)).replace('-', '_')
 
         # consider the username min and max constraints
         slugified_name = slugified_name[:30]
@@ -584,15 +606,11 @@ class FacebookUserConverter(object):
         '''
         friends = getattr(self, '_friends', None)
         if friends is None:
-            friends_response = self.open_facebook.fql(
-                "SELECT uid, name, sex FROM user WHERE uid IN (SELECT uid2 "
-                "FROM friend WHERE uid1 = me()) LIMIT %s" % limit)
-            # friends_response = self.open_facebook.get('me/friends',
-            #                                           limit=limit)
-            # friends = friends_response and friends_response.get('data')
+            friends_response = self.open_facebook.get('me/friends', limit=limit, fields='gender,name')
+
             friends = []
-            for response_dict in friends_response:
-                response_dict['id'] = response_dict['uid']
+            for response_dict in friends_response.get('data'):
+                response_dict['id'] = response_dict['id']
                 friends.append(response_dict)
 
         logger.info('found %s friends', len(friends))
@@ -628,6 +646,8 @@ class FacebookUserConverter(object):
             global_defaults = dict(user_id=user.id)
             default_dict = {}
             gender_map = dict(female='F', male='M')
+            gender_map['male (hidden)'] = 'M'
+            gender_map['female (hidden)'] = 'F'
             for f in friends:
                 name = f.get('name')
                 gender = None
