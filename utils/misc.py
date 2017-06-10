@@ -26,7 +26,7 @@ def image_resize(image_path, new_size, maintain_ratio=False):
         comm_args = '-resize "%s^" -gravity center  -extent %s "%s/%s"' \
                     % (new_size, new_size, save_dir, new_filename)
     else:
-        image_size = check_output(['/usr/bin/identify', "%s" % image_path])
+        image_size = check_output(['identify', "%s" % image_path])
         image_size = resub(r'.* ([0-9]+x[0-9]+) .*\n', r'\1', image_size)
         old_x, old_y = image_size.split('x')
         new_x, new_y = new_size.split('x')
