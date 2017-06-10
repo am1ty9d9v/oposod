@@ -5,7 +5,7 @@ Whoosh
 argparse
 autobahn
 distribute
-django-bootstrap-toolkit
+#django-bootstrap-toolkit
 django-extensions
 django-haystack
 django-hstore
