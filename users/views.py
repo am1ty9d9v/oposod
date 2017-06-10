@@ -264,13 +264,13 @@ def upload_new_story(request):
 
                 # resizing with ratio maintained.
                 misc.image_resize(MEDIA_ROOT + '/' + str(dp_obj.photo), '280x280', maintain_ratio=True)
-                return HttpResponseRedirect(
-                    reverse('users.views.uploading_finished', args=(dp_obj.id,)))
             except Exception, e:
                 print 'ERROR IN UPLOADING DAILY PHOTO, %s' % e
-                dp_obj.delete()
+                # dp_obj.delete()
                 # messages.error(request, 'Please select only images file')
                 # form = UploadNewStoryForm()
+            return HttpResponseRedirect(
+                reverse('uploading_finished', args=(dp_obj.id,)))
     else:
         form = UploadNewStoryForm()
     return render(request, 'users/upload_new_story.html', {

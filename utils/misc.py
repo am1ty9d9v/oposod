@@ -1,17 +1,22 @@
+import random
+import string
+import threading
+import time
 from shlex import split as shlex_split
 from subprocess import call, check_output
+from urllib import urlencode
+
+from django.conf import settings
+from django.core.mail.message import EmailMessage
+from django.shortcuts import get_object_or_404
+from httplib2 import Http
 from os import path
 from re import sub as resub
-from django.conf import settings
-import  string, random, threading
-from django.core.mail.message import EmailMessage
-from oposod.settings import EMAIL_HOST_USER
-from django.shortcuts import get_object_or_404
-from users.models import PrivacySettings, DailyPhoto
+
 from django_facebook.models import FacebookProfile
-from httplib2 import Http
-from urllib import urlencode
-import time
+from oposod.settings import EMAIL_HOST_USER
+from users.models import PrivacySettings, DailyPhoto
+
 
 def image_resize(image_path, new_size, maintain_ratio=False):
     save_dir = path.dirname(image_path)
@@ -19,35 +24,38 @@ def image_resize(image_path, new_size, maintain_ratio=False):
     resize_command = ['convert', "%s" % image_path]
     if not maintain_ratio:
         comm_args = '-resize "%s^" -gravity center  -extent %s "%s/%s"' \
-            % (new_size, new_size, save_dir, new_filename)
+                    % (new_size, new_size, save_dir, new_filename)
     else:
         image_size = check_output(['/usr/bin/identify', "%s" % image_path])
         image_size = resub(r'.* ([0-9]+x[0-9]+) .*\n', r'\1', image_size)
         old_x, old_y = image_size.split('x')
         new_x, new_y = new_size.split('x')
-        new_y = int( (float(old_y) / float(old_x)) * float(new_x))
+        new_y = int((float(old_y) / float(old_x)) * float(new_x))
         new_size = "%sx%d" % (new_x, new_y)
         new_filename = '%s_%s' % (path.basename(image_path), new_x)
 
         comm_args = '-resize %s^ -gravity center  -extent %s "%s/%s"' \
-            % (new_size, new_size, save_dir, new_filename)
+                    % (new_size, new_size, save_dir, new_filename)
 
     resize_command.extend(shlex_split(comm_args))
     call(resize_command)
 
+
 def activation_key_generator(size, chars=string.ascii_uppercase + string.digits):
-    '''
+    """
         It will take two arguments, one is length of the random string generaed
         and the other is the set of characters from which the string has to be
         generated and return the random string.
-    '''
+    """
     return ''.join(random.choice(chars) for x in range(size))
 
+
 class EmailThread(threading.Thread):
-    '''
+    """
     This class is used to send the emails asynchronously
     to the registered users.
-    '''
+    """
+
     def __init__(self, subject, html_content, recipient_list):
         self.subject = subject
         self.recipient_list = recipient_list
@@ -63,6 +71,7 @@ class EmailThread(threading.Thread):
 def send_html_mail(subject, html_content, recipient_list):
     EmailThread(subject, html_content, recipient_list).start()
 
+
 def save_progressive_image(photo, is_daily_photo=True):
     orig_photo_path = "%s/%s" % (settings.MEDIA_ROOT, photo)
     new_photo = "%s_prs.jpg" % str(photo).split('.')[0]
@@ -70,7 +79,6 @@ def save_progressive_image(photo, is_daily_photo=True):
     print "photo: ", photo
     print "new photo: ", new_photo
     print "orig_photo_path: ", orig_photo_path
-
 
     # TODO: Change the max res of both daily_photo and cover_photo
     if is_daily_photo:
