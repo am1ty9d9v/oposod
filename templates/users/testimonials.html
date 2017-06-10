@@ -65,7 +65,7 @@
                     {% if i.is_set %}
                         <div class="circular">
                             <a href="/{{testimonial_obj_single.author.username}}">
-                                <img style="width:90px;height:90px" src="{% cropped_thumbnail i cropping %}">
+                                <img style="width:90px;height:90px" src="{% cropped_thumbnail i 'cropping' %}">
                             </a>
                         </div>
                     {% endif %}
@@ -91,7 +91,7 @@
                         {% if i.is_set %}
                             <div class="circular">
                                 <a  href="/{{single_testi.author.username}}">
-                                    <img style="width:90px;height:90px" src="{% cropped_thumbnail i cropping %}">
+                                    <img style="width:90px;height:90px" src="{% cropped_thumbnail i 'cropping' %}">
                                 </a>
                             </div>
                         {% endif %}

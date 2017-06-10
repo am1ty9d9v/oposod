@@ -1,3 +1,9 @@
+import datetime
+import json
+import thread
+import urllib2
+from time import time
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -6,38 +12,30 @@ from django.db.models import Sum
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from oposod.settings import MEDIA_ROOT, IMAGE_SIZE_DAILY_PHOTO, \
-  MEDIA_URL
+from re import findall, sub as resub
+from redis import StrictRedis
 
+from django_facebook.decorators import facebook_required
+from django_facebook.models import FacebookProfile
+from oposod.settings import MEDIA_ROOT, IMAGE_SIZE_DAILY_PHOTO, \
+    MEDIA_URL
 from users.forms import EditCoverPhotoForm, EditProfilePhotoForm, \
     EditProfileForm, UploadNewStoryForm, WriteStatusForm, \
     EditPrivacyForm, WriteStoryForm, WriteTestimonialForm
 from users.models import CoverPhoto, ProfilePhoto, Profile, FriendRequest, \
     Friends, DailyPhoto, Status, Comments, Likes, PrivacySettings, Testimonials
 from utils import misc
-from utils.privacy_decorators import visibility_of_daily_photos, \
-    visibility_of_friends, visibility_of_stories,visibility_of_profile_photos, \
-    visibility_of_cover_photos
-from django_facebook.models import FacebookProfile
-from django_facebook.decorators import facebook_required
 from utils.misc import share_photos
-
-# Python imports
-from redis import StrictRedis
-from re import findall, sub as resub
-from time import time
-import thread
-import datetime
-import json
-import urllib2
-
+from utils.privacy_decorators import visibility_of_daily_photos, \
+    visibility_of_friends, visibility_of_stories, visibility_of_profile_photos, \
+    visibility_of_cover_photos
 
 
 # @login_required
 def profile(request, username):
     username = username.lower()
     try:
-        user_obj = get_object_or_404(User, username = username)
+        user_obj = get_object_or_404(User, username=username)
     except:
         user_obj = None
     if user_obj:
@@ -45,34 +43,33 @@ def profile(request, username):
     else:
         return HttpResponseRedirect('/404')
     try:
-        cover_photo_obj = CoverPhoto.objects.filter(user = user_obj).order_by('id').reverse()[0]
+        cover_photo_obj = CoverPhoto.objects.filter(user=user_obj).order_by('id').reverse()[0]
     except:
         cover_photo_obj = None
     try:
-        profile_photo_obj = ProfilePhoto.objects.filter(user = user_obj).order_by('id').reverse()[0]
+        profile_photo_obj = ProfilePhoto.objects.filter(user=user_obj).order_by('id').reverse()[0]
     except:
         profile_photo_obj = None
     try:
-        profile_obj = get_object_or_404(Profile, user = user_obj)
+        profile_obj = get_object_or_404(Profile, user=user_obj)
     except:
         profile_obj = None
     try:
-        status_obj = Status.objects.filter(user = get_object_or_404(User, username = username)).reverse()[0]
+        status_obj = Status.objects.filter(user=get_object_or_404(User, username=username)).reverse()[0]
     except:
         status_obj = None
     if request.user.is_authenticated():
         try:
-            send_fr_obj = FriendRequest.objects.get(sender = request.user,
-                recipient = get_object_or_404(User, username = username))
+            send_fr_obj = FriendRequest.objects.get(sender=request.user,
+                                                    recipient=get_object_or_404(User, username=username))
 
         except:
             send_fr_obj = None
 
-
         try:
             received_fr_obj = FriendRequest.objects.get(
-                    sender = get_object_or_404(User, username = username),
-            recipient = request.user)
+                sender=get_object_or_404(User, username=username),
+                recipient=request.user)
 
         except:
             received_fr_obj = None
@@ -85,8 +82,8 @@ def profile(request, username):
         form = WriteStatusForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data['status']
-            Status.objects.create(user = request.user, status = status)
-            return HttpResponseRedirect(reverse('users.views.profile', args = (request.user.username,)))
+            Status.objects.create(user=request.user, status=status)
+            return HttpResponseRedirect(reverse('users.views.profile', args=(request.user.username,)))
     else:
         form = WriteStatusForm()
         print form
@@ -103,6 +100,7 @@ def profile(request, username):
         'form': form,
         'user_obj': user_obj,
     })
+
 
 @login_required
 def edit_cover_photo(request):
@@ -126,7 +124,7 @@ def edit_cover_photo(request):
             cover_photo_obj.save()
 
             # resizing with ratio maintained.
-            misc.image_resize(MEDIA_ROOT + '/' + str(cover_photo_obj.cover_photo), '280x280', maintain_ratio = True)
+            misc.image_resize(MEDIA_ROOT + '/' + str(cover_photo_obj.cover_photo), '280x280', maintain_ratio=True)
             return HttpResponseRedirect('/%s' % user_obj.username)
 
     return render(request, 'users/edit_cover_photo.html', {
@@ -135,26 +133,26 @@ def edit_cover_photo(request):
 
 
 @login_required
-def edit_profile_photo(request, image_id = None):
-    profile_photo_obj = get_object_or_404(ProfilePhoto, user = request.user, key = image_id) if image_id else None
-    form = EditProfilePhotoForm(instance = profile_photo_obj)
-    user_obj = get_object_or_404(User, username = request.user.username)
+def edit_profile_photo(request, image_id=None):
+    profile_photo_obj = get_object_or_404(ProfilePhoto, user=request.user, key=image_id) if image_id else None
+    form = EditProfilePhotoForm(instance=profile_photo_obj)
+    user_obj = get_object_or_404(User, username=request.user.username)
 
     if request.method == 'POST':
-        form = EditProfilePhotoForm(request.POST, request.FILES, instance = profile_photo_obj)
+        form = EditProfilePhotoForm(request.POST, request.FILES, instance=profile_photo_obj)
         if form.is_valid():
             profile_photo_obj = form.save()
             profile_photo_obj.user = user_obj
-            ProfilePhoto.objects.filter(user = request.user).update(is_set = False)
+            ProfilePhoto.objects.filter(user=request.user).update(is_set=False)
             profile_photo_obj.is_set = True
             profile_photo_obj.uploaded_on = datetime.datetime.now()
             profile_photo_obj.key = profile_photo_obj.key_generate
             profile_photo_obj.save()
 
             # resizing with ratio maintained.
-            misc.image_resize(MEDIA_ROOT + '/' + str(profile_photo_obj.profile_photo), '280x280', maintain_ratio = True)
+            misc.image_resize(MEDIA_ROOT + '/' + str(profile_photo_obj.profile_photo), '280x280', maintain_ratio=True)
 
-            return HttpResponseRedirect(reverse('edit_profile_photo', args = (profile_photo_obj.key,)))
+            return HttpResponseRedirect(reverse('edit_profile_photo', args=(profile_photo_obj.key,)))
 
     return render(request, 'users/edit_profile_photo.html', {
         'form': form,
@@ -162,22 +160,17 @@ def edit_profile_photo(request, image_id = None):
     })
 
 
-
-
 @login_required
 def edit_profile(request):
     user_obj = request.user
     try:
-        profile_obj = get_object_or_404(Profile, user = user_obj)
+        profile_obj = get_object_or_404(Profile, user=user_obj)
     except:
         profile_obj = None
-
-
 
     if request.method == 'POST':
         form = EditProfileForm(request.POST)
         if form.is_valid():
-
             profile_obj.city = form.cleaned_data['city'].title()
             profile_obj.country = form.cleaned_data['country'].title()
             profile_obj.description = form.cleaned_data['description']
@@ -187,17 +180,16 @@ def edit_profile(request):
             user_obj.save()
             messages.info(request, 'Your profile information is saved')
     else:
-        form = EditProfileForm(initial = {
-            'first_name':user_obj.first_name,
+        form = EditProfileForm(initial={
+            'first_name': user_obj.first_name,
             'last_name': user_obj.last_name,
-            'username':user_obj.username,
-            'sex':  profile_obj.sex,
+            'username': user_obj.username,
+            'sex': profile_obj.sex,
             'dob': profile_obj.dob.strftime('%d %b, %Y - %A'),
-            'city':  profile_obj.city,
+            'city': profile_obj.city,
             'country': profile_obj.country,
             'description': profile_obj.description,
-            })
-
+        })
 
     return render(request, 'users/edit_profile.html', {
         'form': form,
@@ -210,23 +202,21 @@ def settings(request):
 
     })
 
+
 @visibility_of_friends
 def friends(request, username):
     username = username
 
-    user_obj = get_object_or_404(User, username = username)
+    user_obj = get_object_or_404(User, username=username)
 
-
-    fr_obj = FriendRequest.objects.filter(recipient = user_obj,
-            is_accepted = False)
-
+    fr_obj = FriendRequest.objects.filter(recipient=user_obj,
+                                          is_accepted=False)
 
     try:
-        friends_id_obj = Friends.objects.get(user = user_obj)
+        friends_id_obj = Friends.objects.get(user=user_obj)
         friends_obj_list = []
         for i in friends_id_obj.list_of:
-            friends_obj_list.append(get_object_or_404(User, id = i))
-
+            friends_obj_list.append(get_object_or_404(User, id=i))
 
         print friends_obj_list
     except:
@@ -235,22 +225,23 @@ def friends(request, username):
         'friends_obj_list': friends_obj_list,
         'fr_obj': fr_obj,
         'username': username,
-        'user_obj':user_obj,
+        'user_obj': user_obj,
     })
+
 
 @visibility_of_stories
 def stories(request, username):
-    user_obj = get_object_or_404(User, username = username)
-    df_obj = DailyPhoto.objects.filter(user = user_obj, is_public = True).order_by('-id')
+    user_obj = get_object_or_404(User, username=username)
+    df_obj = DailyPhoto.objects.filter(user=user_obj, is_public=True).order_by('-id')
     return render(request, 'users/stories.html', {
         'df_obj': df_obj,
         "username": username,
         'user_obj': user_obj,
     })
 
+
 @login_required
 def upload_new_story(request):
-
     if request.method == 'POST':
         form = UploadNewStoryForm(request.POST, request.FILES)
         if form.is_valid():
@@ -262,19 +253,19 @@ def upload_new_story(request):
             dp_obj.key = dp_obj.key_generate
             dp_obj.save()
             try:
-                #save a progressive image of the original and update db entry.
+                # save a progressive image of the original and update db entry.
                 dp_obj.photo = misc.save_progressive_image(dp_obj.photo)
                 dp_obj.save()
 
                 # Code to generate more diff diff
                 # sizes of the uploaded photo
                 for size in IMAGE_SIZE_DAILY_PHOTO:
-                    misc.image_resize(MEDIA_ROOT + '/' + str(dp_obj.photo), size,)
+                    misc.image_resize(MEDIA_ROOT + '/' + str(dp_obj.photo), size, )
 
                 # resizing with ratio maintained.
-                misc.image_resize(MEDIA_ROOT + '/' + str(dp_obj.photo), '280x280', maintain_ratio = True)
+                misc.image_resize(MEDIA_ROOT + '/' + str(dp_obj.photo), '280x280', maintain_ratio=True)
                 return HttpResponseRedirect(
-                    reverse('users.views.uploading_finished', args = (dp_obj.id,)))
+                    reverse('users.views.uploading_finished', args=(dp_obj.id,)))
             except Exception, e:
                 print 'ERROR IN UPLOADING DAILY PHOTO, %s' % e
                 dp_obj.delete()
@@ -290,7 +281,7 @@ def upload_new_story(request):
 @login_required
 def uploading_finished(request, photo_id):
     photo_id = photo_id
-    dp_obj = get_object_or_404(DailyPhoto, id = photo_id)
+    dp_obj = get_object_or_404(DailyPhoto, id=photo_id)
     photo_path = dp_obj.photo
     photo_path = MEDIA_URL + str(photo_path)
     print 'my photo path', photo_path
@@ -301,12 +292,11 @@ def uploading_finished(request, photo_id):
 
 
 @login_required
-
 def write_story(request):
     if request.user.is_authenticated():
         user_obj = request.user
 
-    profile_obj = get_object_or_404(Profile, user = user_obj)
+    profile_obj = get_object_or_404(Profile, user=user_obj)
     year_of_birth = profile_obj.dob.year
     if request.method == 'POST':
         form = WriteStoryForm(request.POST)
@@ -323,24 +313,22 @@ def write_story(request):
             is_public = request.POST.get('public', '')
             is_public = int(is_public)
 
-
-
             dp_obj = DailyPhoto.objects.filter(user=user_obj, uploaded_on=uploaded_on)
             if dp_obj:
                 if is_public:
                     for i in dp_obj:
-                        i.is_public=False
+                        i.is_public = False
                         i.save()
 
             new_photo_id = request.POST.get('new_photo_id', '')
 
-            DailyPhoto.objects.filter(id = new_photo_id).update(
-                heading = heading,
-                story = story,
-                no_of_views = 0,
-                moods = moods,
-                is_public = True if is_public else False,
-                uploaded_on = uploaded_on
+            DailyPhoto.objects.filter(id=new_photo_id).update(
+                heading=heading,
+                story=story,
+                no_of_views=0,
+                moods=moods,
+                is_public=True if is_public else False,
+                uploaded_on=uploaded_on
             )
 
             thread.start_new_thread(share_photos, (request, new_photo_id))
@@ -349,7 +337,7 @@ def write_story(request):
             # Set redis keyword for realtime notifications.
             redis_obj = StrictRedis(db=9)
             redis_obj.publish("notifications:%s" % user_obj.username, 1)
-            #TODO Save the activity in db.
+            # TODO Save the activity in db.
 
             return HttpResponseRedirect('/%s/photo-calendar' % user_obj.username)
 
@@ -368,7 +356,7 @@ def edit_story(request, dp_id):
         story = request.GET.get('do_edit_story', '')
         story = story.strip()
         if story:
-            DailyPhoto.objects.filter(id = dp_id).update(story=story)
+            DailyPhoto.objects.filter(id=dp_id).update(story=story)
     else:
         return HttpResponse('ONLY POST...')
     return HttpResponse('')
@@ -386,7 +374,6 @@ def check_for_taken_date(request, year, month, day):
             for i in dp_obj:
 
                 if str(i.uploaded_on) == date:
-
                     return HttpResponse('false')
 
         else:
@@ -421,7 +408,7 @@ def send_friend_request(request, recipient_id):
         # stream
         try:
             # This is creating error;;
-            #hmset() takes exactly 3 arguments (10 given)
+            # hmset() takes exactly 3 arguments (10 given)
             redis_obj.hmset(
                 'user:notify:%s' % request.user.id,
                 'obj_name', fr_obj._meta.object_name,
@@ -442,36 +429,36 @@ def accept_friend_request(request, sender_id):
         recipient_obj = request.user
     if request.is_ajax():
         try:
-            friends_obj_r = Friends.objects.get(user = recipient_obj)
+            friends_obj_r = Friends.objects.get(user=recipient_obj)
         except:
-            friends_obj_r = Friends.objects.create(user = recipient_obj, list_of = [])
+            friends_obj_r = Friends.objects.create(user=recipient_obj, list_of=[])
 
         if int(sender_id) not in friends_obj_r.list_of:
             friends_obj_r.list_of.append(int(sender_id))
         friends_obj_r.save()
 
         try:
-            friends_obj_s = Friends.objects.get(user_id = sender_id)
+            friends_obj_s = Friends.objects.get(user_id=sender_id)
         except:
-            friends_obj_s = Friends.objects.create(user = get_object_or_404(User, id = sender_id), list_of = [])
+            friends_obj_s = Friends.objects.create(user=get_object_or_404(User, id=sender_id), list_of=[])
 
         if int(recipient_obj.id) not in friends_obj_s.list_of:
             friends_obj_s.list_of.append(int(recipient_obj.id))
         friends_obj_s.save()
 
-        FriendRequest.objects.filter(recipient_id = recipient_obj.id,
-                sender_id = sender_id).update(is_accepted = True)
+        FriendRequest.objects.filter(recipient_id=recipient_obj.id,
+                                     sender_id=sender_id).update(is_accepted=True)
     else:
         return HttpResponse('ONLY POST...')
 
-
     return HttpResponse('')
+
 
 @login_required
 def cancel_friend_request(request, recipient_id):
     if request.is_ajax():
-        fr_obj = FriendRequest.objects.get(sender = request.user,
-            recipient = get_object_or_404(User, id = recipient_id))
+        fr_obj = FriendRequest.objects.get(sender=request.user,
+                                           recipient=get_object_or_404(User, id=recipient_id))
         if not fr_obj.is_accepted:
             fr_obj.delete()
     else:
@@ -484,8 +471,8 @@ def cancel_friend_request(request, recipient_id):
 def reject_friend_request(request, sender_id):
     if request.is_ajax():
         FriendRequest.objects.filter(
-            sender = get_object_or_404(User, id = sender_id),
-            recipient = get_object_or_404(User, id = request.user.id)).delete()
+            sender=get_object_or_404(User, id=sender_id),
+            recipient=get_object_or_404(User, id=request.user.id)).delete()
     else:
         return HttpResponse('ONLY POST...')
     return HttpResponse('')
@@ -501,28 +488,28 @@ def delete_from_friends(request, friend_id):
         # While removing we need to remove the user from his and the
         # other friends list_of field .
 
-        fr_obj = get_object_or_404(Friends, user = request.user)
+        fr_obj = get_object_or_404(Friends, user=request.user)
         # Have to add some if statement here, as it may generate error.
-        #if int(friend_id) in fr_obj.list_of:
+        # if int(friend_id) in fr_obj.list_of:
         fr_obj.list_of.remove(int(friend_id))
         fr_obj.save()
 
         fr_obj1 = get_object_or_404(Friends,
-            user = get_object_or_404(User, id = friend_id))
+                                    user=get_object_or_404(User, id=friend_id))
         fr_obj1.list_of.remove(int(request.user.id))
         fr_obj1.save()
 
         # Removing from FriendsRequest model
         try:
             fr_obj = get_object_or_404(FriendRequest,
-                sender = get_object_or_404(User, id = request.user.id),
-                recipient = get_object_or_404(User, id = friend_id))
+                                       sender=get_object_or_404(User, id=request.user.id),
+                                       recipient=get_object_or_404(User, id=friend_id))
             fr_obj.delete()
             print 'removed from first %s', request.user.id
         except:
             fr_obj = get_object_or_404(FriendRequest,
-                sender = get_object_or_404(User, id = friend_id),
-                recipient = get_object_or_404(User, id = request.user.id))
+                                       sender=get_object_or_404(User, id=friend_id),
+                                       recipient=get_object_or_404(User, id=request.user.id))
             fr_obj.delete()
             print 'removed from second %s', request.user.id
     else:
@@ -543,22 +530,22 @@ def write_status(request):
         form = WriteStatusForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data['status']
-            Status.objects.create(user = request.user, status = status)
-            return HttpResponseRedirect(reverse('users.views.profile', args = (request.user.username,)))
+            Status.objects.create(user=request.user, status=status)
+            return HttpResponseRedirect(reverse('users.views.profile', args=(request.user.username,)))
     else:
         form = WriteStatusForm()
 
-    return render(request, 'users/write_status.html' , {
+    return render(request, 'users/write_status.html', {
         'form': form,
     })
 
 
 @visibility_of_daily_photos
-def browse_daily_photo_single_lightbox(request, username, photo_id = None):
+def browse_daily_photo_single_lightbox(request, username, photo_id=None):
     username = username
 
     try:
-        user_obj = get_object_or_404(User, username = username)
+        user_obj = get_object_or_404(User, username=username)
     except:
         user_obj = None
     dailyphoto_obj_single = None
@@ -573,14 +560,14 @@ def browse_daily_photo_single_lightbox(request, username, photo_id = None):
 
         if photo_id:
 
-            dailyphoto_obj_single = get_object_or_404(DailyPhoto, user = user_obj, key = photo_id, is_public = True)
+            dailyphoto_obj_single = get_object_or_404(DailyPhoto, user=user_obj, key=photo_id, is_public=True)
             dailyphoto_obj_single.no_of_views = int(dailyphoto_obj_single.no_of_views) + 1
             dailyphoto_obj_single.save()
             comments_obj = Comments.objects.filter(
-                    dailyphoto = get_object_or_404(DailyPhoto, key = photo_id))
+                dailyphoto=get_object_or_404(DailyPhoto, key=photo_id))
 
             # Pagination
-            photo_list = list(DailyPhoto.objects.filter(user = user_obj, is_public = True).order_by('uploaded_on'))
+            photo_list = list(DailyPhoto.objects.filter(user=user_obj, is_public=True).order_by('uploaded_on'))
             curr_page_number = photo_list.index(dailyphoto_obj_single)
             last_page_number = len(photo_list) - 1
 
@@ -601,21 +588,19 @@ def browse_daily_photo_single_lightbox(request, username, photo_id = None):
             # Get list of friends for commenting
             logged_in_user = request.user
 
-
             try:
                 friends_id_list = logged_in_user.friends_set.get().list_of
                 for friend_id in friends_id_list:
-                    username = User.objects.get(id = friend_id).username
+                    username = User.objects.get(id=friend_id).username
 
                     friends_dict[username] = {"url": "/%s/" % username}
             except Exception, err:
                 print "pass statement ", err
 
-
     score = {}
     likes_count = 0
     try:
-        score[dailyphoto_obj_single.id] = dailyphoto_obj_single.likes_set.get(user = request.user).rating
+        score[dailyphoto_obj_single.id] = dailyphoto_obj_single.likes_set.get(user=request.user).rating
     except:
         pass
 
@@ -625,7 +610,6 @@ def browse_daily_photo_single_lightbox(request, username, photo_id = None):
             likes_count = 0
     except:
         likes_count = 0
-
 
     return render(request, 'users/browse_daily_photo_single_lightbox.html', {
         'dailyphoto_obj_single': dailyphoto_obj_single,
@@ -641,13 +625,12 @@ def browse_daily_photo_single_lightbox(request, username, photo_id = None):
     })
 
 
-
 @visibility_of_daily_photos
-def browse_daily_photo_single(request, username, photo_id = None):
+def browse_daily_photo_single(request, username, photo_id=None):
     username = username
 
     try:
-        user_obj = get_object_or_404(User, username = username)
+        user_obj = get_object_or_404(User, username=username)
     except:
         user_obj = None
     dailyphoto_obj_single = None
@@ -662,14 +645,14 @@ def browse_daily_photo_single(request, username, photo_id = None):
 
         if photo_id:
 
-            dailyphoto_obj_single = get_object_or_404(DailyPhoto, user = user_obj, key = photo_id, is_public = True)
+            dailyphoto_obj_single = get_object_or_404(DailyPhoto, user=user_obj, key=photo_id, is_public=True)
             dailyphoto_obj_single.no_of_views = int(dailyphoto_obj_single.no_of_views) + 1
             dailyphoto_obj_single.save()
             comments_obj = Comments.objects.filter(
-                    dailyphoto = get_object_or_404(DailyPhoto, key = photo_id))
+                dailyphoto=get_object_or_404(DailyPhoto, key=photo_id))
 
             # Pagination
-            photo_list = list(DailyPhoto.objects.filter(user = user_obj, is_public = True).order_by('uploaded_on'))
+            photo_list = list(DailyPhoto.objects.filter(user=user_obj, is_public=True).order_by('uploaded_on'))
             curr_page_number = photo_list.index(dailyphoto_obj_single)
             last_page_number = len(photo_list) - 1
 
@@ -690,21 +673,19 @@ def browse_daily_photo_single(request, username, photo_id = None):
             # Get list of friends for commenting
             logged_in_user = request.user
 
-
             try:
                 friends_id_list = logged_in_user.friends_set.get().list_of
                 for friend_id in friends_id_list:
-                    username = User.objects.get(id = friend_id).username
+                    username = User.objects.get(id=friend_id).username
 
                     friends_dict[username] = {"url": "/%s/" % username}
             except Exception, err:
                 print "pass statement ", err
 
-
     score = {}
     likes_count = 0
     try:
-        score[dailyphoto_obj_single.id] = dailyphoto_obj_single.likes_set.get(user = request.user).rating
+        score[dailyphoto_obj_single.id] = dailyphoto_obj_single.likes_set.get(user=request.user).rating
     except:
         pass
 
@@ -714,7 +695,6 @@ def browse_daily_photo_single(request, username, photo_id = None):
             likes_count = 0
     except:
         likes_count = 0
-
 
     return render(request, 'users/browse_daily_photo_single.html', {
         'dailyphoto_obj_single': dailyphoto_obj_single,
@@ -729,16 +709,17 @@ def browse_daily_photo_single(request, username, photo_id = None):
         'friends_id_list': friends_id_list,
     })
 
+
 @visibility_of_daily_photos
 def browse_daily_photo_all(request, username):
     username = username
     try:
-        user_obj = get_object_or_404(User, username = username)
+        user_obj = get_object_or_404(User, username=username)
     except:
         user_obj = None
 
     dailyphoto_obj_all = DailyPhoto.objects.filter(
-                user = user_obj, is_public = True).order_by("-id")
+        user=user_obj, is_public=True).order_by("-id")
     return render(request, 'users/browse_daily_photo_all.html', {
         'dailyphoto_obj_all': dailyphoto_obj_all,
 
@@ -752,11 +733,11 @@ def browse_daily_photo_all(request, username):
 def browse_profile_photos_all(request, username):
     username = username
     try:
-        user_obj = get_object_or_404(User, username = username)
+        user_obj = get_object_or_404(User, username=username)
     except:
         user_obj = None
     profilephoto_obj_all = ProfilePhoto.objects.filter(
-        user = user_obj).order_by("-id")
+        user=user_obj).order_by("-id")
     return render(request, 'users/browse_profile_photos_all.html', {
         'profilephoto_obj': profilephoto_obj_all,
         'username': username,
@@ -768,11 +749,11 @@ def browse_profile_photos_all(request, username):
 def browse_cover_photos_all(request, username):
     username = username
     try:
-        user_obj = get_object_or_404(User, username = username)
+        user_obj = get_object_or_404(User, username=username)
     except:
         user_obj = None
     coverphotos_obj_all = CoverPhoto.objects.filter(
-        user = user_obj)
+        user=user_obj)
     return render(request, 'users/browse_cover_photos_all.html', {
         'coverphoto_obj': coverphotos_obj_all,
         'username': username,
@@ -782,12 +763,12 @@ def browse_cover_photos_all(request, username):
 
 def user_profile_info(request, username):
     username = username
-    user_obj = get_object_or_404(User, username = username)
+    user_obj = get_object_or_404(User, username=username)
     profilephoto_obj = None
     if user_obj:
         profilephoto_obj = get_object_or_404(ProfilePhoto,
-            user = user_obj,
-            is_set = True)
+                                             user=user_obj,
+                                             is_set=True)
     return render(request, 'users/user_profile_info.html', {
         "username": username,
         'profilephoto_obj': profilephoto_obj,
@@ -799,7 +780,7 @@ def user_profile_info(request, username):
 @csrf_exempt
 def do_comment(request, dailyphoto_id):
     dp_obj = get_object_or_404(DailyPhoto, id=dailyphoto_id)
-    
+
     comment = request.POST.get('do_comment', '')
     comment = comment.strip()
     # Save the comment in DB.
@@ -809,14 +790,15 @@ def do_comment(request, dailyphoto_id):
     for nuser in list_of_users_in_comment:
         print nuser
     if comment:
-        Comments.objects.create(user = request.user,
-            dailyphoto = get_object_or_404(DailyPhoto, id = dailyphoto_id),
-            comment = comment,
-            )
+        Comments.objects.create(user=request.user,
+                                dailyphoto=get_object_or_404(DailyPhoto, id=dailyphoto_id),
+                                comment=comment,
+                                )
         redis_obj = StrictRedis(db=9)
         redis_obj.publish("notifications:%s" % request.user.username, 1)
-    return HttpResponseRedirect(reverse('users.views.browse_daily_photo_single', args=(str(dp_obj.user.username),dp_obj.key )))
-    
+    return HttpResponseRedirect(
+        reverse('users.views.browse_daily_photo_single', args=(str(dp_obj.user.username), dp_obj.key)))
+
 
 @login_required
 def edit_comment(request, comment_id):
@@ -824,20 +806,16 @@ def edit_comment(request, comment_id):
         comment = request.GET.get('do_edit_comment', '')
         comment = comment.strip()
         if comment:
-            Comments.objects.filter(id = comment_id).update(comment=comment)
+            Comments.objects.filter(id=comment_id).update(comment=comment)
     else:
         return HttpResponse('ONLY POST...')
     return HttpResponse('')
 
 
-
-
-
-
 @login_required
 def delete_comment(request, comment_id):
     if request.user.is_authenticated():
-        #user_obj = request.user
+        # user_obj = request.user
         pass
 
         if request.is_ajax():
@@ -849,23 +827,22 @@ def delete_comment(request, comment_id):
     return HttpResponse('')
 
 
-
 @login_required
 @csrf_exempt
 def set_rating(request):
     if request.method == 'POST':
-        daily_photo = get_object_or_404(DailyPhoto, id = request.POST['dayphotoID'])
+        daily_photo = get_object_or_404(DailyPhoto, id=request.POST['dayphotoID'])
 
-        likes_obj = Likes.objects.get_or_create(user = request.user, daily_photo = daily_photo)[0]
+        likes_obj = Likes.objects.get_or_create(user=request.user, daily_photo=daily_photo)[0]
         likes_obj.rating = request.POST['score']
         likes_obj.save()
 
-    return HttpResponse(json.dumps({}), content_type = "application/json")
+    return HttpResponse(json.dumps({}), content_type="application/json")
 
 
 @login_required
 def edit_privacy_settings(request):
-    ps_obj = get_object_or_404(PrivacySettings, user = request.user)
+    ps_obj = get_object_or_404(PrivacySettings, user=request.user)
     if request.method == 'POST':
         form = EditPrivacyForm(request.POST)
         if form.is_valid():
@@ -878,29 +855,27 @@ def edit_privacy_settings(request):
             who_can_like_photos = form.cleaned_data['who_can_like_photos']
             who_can_comment_on_photos = form.cleaned_data['who_can_comment_on_photos']
 
-
             if daily_photos_visibility == 'N' or daily_photos_visibility == "F":
                 is_sharing_of_photos_on_fb = 'N'
             else:
                 is_sharing_of_photos_on_fb = ps_obj.is_sharing_of_photos_on_fb
 
-
-            PrivacySettings.objects.filter(user = request.user).update(
-                friends_visibility = friends_visibility,
-                is_sharing_of_photos_on_fb = is_sharing_of_photos_on_fb,
-                cover_photos_visibility = cover_photos_visibility,
-                profile_photos_visibility = profile_photos_visibility,
-                daily_photos_visibility = daily_photos_visibility,
-                stories_visibility = stories_visibility,
-                calendar_visibility = calendar_visibility,
-                who_can_comment_on_photos = who_can_comment_on_photos,
-                who_can_like_photos = who_can_like_photos,
-                )
+            PrivacySettings.objects.filter(user=request.user).update(
+                friends_visibility=friends_visibility,
+                is_sharing_of_photos_on_fb=is_sharing_of_photos_on_fb,
+                cover_photos_visibility=cover_photos_visibility,
+                profile_photos_visibility=profile_photos_visibility,
+                daily_photos_visibility=daily_photos_visibility,
+                stories_visibility=stories_visibility,
+                calendar_visibility=calendar_visibility,
+                who_can_comment_on_photos=who_can_comment_on_photos,
+                who_can_like_photos=who_can_like_photos,
+            )
             messages.info(request, 'Your privacy settings is changed.')
             return HttpResponseRedirect(reverse('users.views.edit_privacy_settings'))
 
     else:
-        form = EditPrivacyForm(initial = {
+        form = EditPrivacyForm(initial={
             'friends_visibility': ps_obj.friends_visibility,
             'cover_photos_visibility': ps_obj.cover_photos_visibility,
             'profile_photos_visibility': ps_obj.profile_photos_visibility,
@@ -910,7 +885,7 @@ def edit_privacy_settings(request):
             'calendar_visibility': ps_obj.calendar_visibility,
             'who_can_comment_on_photos': ps_obj.who_can_comment_on_photos,
             'who_can_like_photos': ps_obj.who_can_like_photos,
-            })
+        })
     return render(request, 'users/edit_privacy_settings.html', {
         'form': form,
     })
@@ -918,8 +893,8 @@ def edit_privacy_settings(request):
 
 @login_required
 def show_likes_history(request, photo_id):
-    #suser_obj = request.user
-    likes_obj = Likes.objects.filter(daily_photo = get_object_or_404(DailyPhoto, id=photo_id))
+    # suser_obj = request.user
+    likes_obj = Likes.objects.filter(daily_photo=get_object_or_404(DailyPhoto, id=photo_id))
     for i in likes_obj:
         print i.user, i.rating
     return render(request, 'users/show_likes_history.html', {
@@ -967,7 +942,7 @@ def do_find_friends(request):
                         access_token = item.access_token
                         facebook_id = item.facebook_id
                         url = 'https://graph.facebook.com/%s/friends/?access_token=%s' \
-                            % (facebook_id, access_token)
+                              % (facebook_id, access_token)
 
                         data = json.load(urllib2.urlopen(url))
                         for item in data['data']:
@@ -988,13 +963,9 @@ def do_find_friends(request):
         else:
             return HttpResponseRedirect('/403')
 
-
-
     return render(request, 'users/do_find_friends.html', {
         'friends_on_oposod_list': friends_on_oposod_list,
     })
-
-
 
 
 def testimonials(request, username, key=None):
@@ -1007,12 +978,11 @@ def testimonials(request, username, key=None):
             testimonial_obj_all = Testimonials.objects.filter(user=user_obj)
         else:
             testimonial_obj_single = get_object_or_404(Testimonials,
-                user=user_obj,
-                key = key)
+                                                       user=user_obj,
+                                                       key=key)
 
     except:
         return HttpResponseRedirect('/404')
-
 
     return render(request, 'users/testimonials.html', {
         'testimonial_obj_all': testimonial_obj_all,
@@ -1089,11 +1059,11 @@ def change_facebook_settings(request):
 
     if user_obj:
         if request.method == 'POST':
-            #pass
+            # pass
             option = request.POST['is_sharing_of_photos_on_fb']
-            #return HttpResponse(option)
+            # return HttpResponse(option)
             PrivacySettings.objects.filter(user=user_obj).update(is_sharing_of_photos_on_fb=option,
-                daily_photos_visibility="A")
+                                                                 daily_photos_visibility="A")
             messages.info(request, 'Your facebook settings is saved.')
             return HttpResponseRedirect(reverse('users.views.facebook_settings'))
         else:
@@ -1110,5 +1080,5 @@ def delete_daily_photo(request, dp_id):
     if user_obj and request.is_ajax():
         DailyPhoto.objects.filter(id=dp_id).delete()
     else:
-        return HttpResponse('')    
+        return HttpResponse('')
     return HttpResponse('')

@@ -72,7 +72,7 @@
                         <li><a href="/"><img style="width:20px;height:20px;margin-left:6.7px;" src="{{STATIC_URL}}images/home_icon3.png"><br>Home</a></li>
                         <li><a href="/{{user.username}}">
                             {% if profile_photo_obj %}
-                            <img style="width:23px;height:22px;margin-left:6.7px;" src="{% cropped_thumbnail profile_photo_obj cropping %}">
+                            <img style="width:23px;height:22px;margin-left:6.7px;" src="{% cropped_thumbnail profile_photo_obj 'cropping' %}">
                             {% else %}
                             <img style="width:23px;height:22px;margin-left:6.7px;" src="http://amityadav.in/pic.jpg">
                             {% endif %}<br>

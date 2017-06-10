@@ -29,7 +29,7 @@ class Status(models.Model):
 
 class ProfilePhoto(models.Model):
     user = models.ForeignKey(User, null=True)
-    profile_photo = ImageCropField(upload_to='profile_photo/')
+    profile_photo = models.ImageField(upload_to='profile_photo/')
     cropping = ImageRatioField('profile_photo', '220x196')
     uploaded_on = models.DateTimeField(null=True)
     is_set = models.BooleanField(default=False)

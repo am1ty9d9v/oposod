@@ -27,7 +27,7 @@
                 {% for profilephoto in user_obj.profilephoto_set.all %}
                     {% if profilephoto.is_set %}
                       <a href="/{{user_obj.username}}">
-                          <img class="left_profile_photo_img" src="{% cropped_thumbnail profilephoto cropping %}">
+                          <img class="left_profile_photo_img" src="{% cropped_thumbnail profilephoto 'cropping' %}">
                       </a>
                     {% endif %}
                 {% endfor %} 
@@ -125,7 +125,7 @@
                             {% for profilephoto in comment.user.profilephoto_set.all %}
                                 {% if profilephoto.is_set %}
                                     <a href="/{{comment.user.username}}">
-                                        <img src="{% cropped_thumbnail profilephoto cropping %}">
+                                        <img src="{% cropped_thumbnail profilephoto 'cropping' %}">
                                     </a>
                                 {% endif %}
                             {% endfor %}
@@ -149,7 +149,7 @@
                     {% for profilephoto in user.profilephoto_set.all %}
                         {% if profilephoto.is_set %}
                             <a href="/{{user.username}}">
-                                <img src="{% cropped_thumbnail profilephoto cropping %}">
+                                <img src="{% cropped_thumbnail profilephoto 'cropping' %}">
                             </a>
                         {% endif %}
                     {% endfor %}
@@ -173,7 +173,7 @@
                             };
                             comment = ncomment;
                         };
-                        var rep = '<div class="single_comment"> <div title="{{comment.user.first_name}} {{comment.user.last_name}}" class="circular commenter_photo"> {% for profilephoto in user.profilephoto_set.all %} {% if profilephoto.is_set %} <a href="/{{user.username}}"> <img src="{% cropped_thumbnail profilephoto cropping %}"> </a> {% endif %} {% endfor %} </div> <div class="comment"> <p>' + comment + '</p> </div> </div>'; 
+                        var rep = '<div class="single_comment"> <div title="{{comment.user.first_name}} {{comment.user.last_name}}" class="circular commenter_photo"> {% for profilephoto in user.profilephoto_set.all %} {% if profilephoto.is_set %} <a href="/{{user.username}}"> <img src="{% cropped_thumbnail profilephoto 'cropping' %}"> </a> {% endif %} {% endfor %} </div> <div class="comment"> <p>' + comment + '</p> </div> </div>';
                         $("#comment").append(rep);
                         $.ajax({
                             type: 'POST',

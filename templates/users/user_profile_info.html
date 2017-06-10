@@ -6,7 +6,7 @@
         {% for profilephoto in user_obj.profilephoto_set.all %}
             {% if profilephoto.is_set %}
             <a href="/{{user_obj.username}}">
-            <img style="width:30px;height:30px;margin-left:136.7px;" src="{% cropped_thumbnail profilephoto cropping %}">
+            <img style="width:30px;height:30px;margin-left:136.7px;" src="{% cropped_thumbnail profilephoto 'cropping' %}">
             </a>
             {% endif %}
         {% endfor %} |

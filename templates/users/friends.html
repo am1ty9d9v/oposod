@@ -20,7 +20,7 @@
                 <div style="width:200px;float:left;clear:both;">
                     {% for i in friend.sender.profilephoto_set.all %}
                     {% if i.is_set %}
-                        <a href="/{{friend.sender.username}}"><img width='120px' height='90px' src="{% cropped_thumbnail i cropping %}"></a>
+                        <a href="/{{friend.sender.username}}"><img width='120px' height='90px' src="{% cropped_thumbnail i 'cropping' %}"></a>
                         {% endif %}
                     {% endfor %}
                     <p>{{friend.sender.first_name|title}} {{friend.sender.last_name|title}}</p>
@@ -81,7 +81,7 @@
             <div style="width:300px;float:left;clear:both;">
             {% for i in friend.profilephoto_set.all %}
             {% if i.is_set %}
-                <a href="/{{friend.username}}"><img width='120px' height='100px' src="{% cropped_thumbnail i cropping %}"></a>
+                <a href="/{{friend.username}}"><img width='120px' height='100px' src="{% cropped_thumbnail i 'cropping' %}"></a>
                 {% endif %}
             {% endfor %}
             <p>{{friend.first_name|title}} {{friend.last_name|title}}</p>

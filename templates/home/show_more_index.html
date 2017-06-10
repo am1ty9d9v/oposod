@@ -4,7 +4,7 @@
 <div class="main-container">
 <div class="story-container">
 	<div id="photo_{{dp_obj.id}}" class="photo" style="position:relative">
-		<a class="group3" title="{{dp_obj.heading}}" href="{% url "browse_daily_photo_single_lightbox" dp_obj.user.username dp_obj.key %}"><img src="{{MEDIA_URL}}{{dp_obj.photo}}_200x160"> </a>
+		<a class="group3" title="{{dp_obj.heading}}" href="{% url 'browse_daily_photo_single_lightbox' dp_obj.user.username dp_obj.key %}"><img src="{{MEDIA_URL}}{{dp_obj.photo}}_200x160"> </a>
 		<div id="id_on_date_{{dp_obj.id}}" style="position:absolute;background:#000;color:#fff;padding:4px;margin-top:130px;margin-left:2px;">
 			{{dp_obj.uploaded_on}}
 		</div>
@@ -30,7 +30,7 @@
 <div class="user">
 	{% for i in dp_obj.user.profilephoto_set.all %}
 	{% if i.is_set %} <a href="/{{dp_obj.user.username}}">
-	<div class="circular"><img style="margin-top: 0px;" src="{% cropped_thumbnail i cropping %}" />
+	<div class="circular"><img style="margin-top: 0px;" src="{% cropped_thumbnail i 'cropping' %}" />
 	</div></a>
 	{% endif %}
 	{% endfor %}

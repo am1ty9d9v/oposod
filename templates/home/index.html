@@ -96,7 +96,7 @@
 			<div class="user">
 				{% for i in dp_obj.user.profilephoto_set.all %}
 				{% if i.is_set %} <a href="/{{dp_obj.user.username}}">
-				<div class="circular"><img style="margin-top: 0px;" src="{% cropped_thumbnail i cropping %}" />
+				<div class="circular"><img style="margin-top: 0px;" src="{% cropped_thumbnail i 'cropping' %}" />
 				</div></a>
 				{% endif %}
 				{% endfor %}
