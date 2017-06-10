@@ -1,20 +1,22 @@
+import datetime
+import json
+import logging
+
 from django.forms import ValidationError
+from open_facebook import exceptions as open_facebook_exceptions
+from open_facebook.exceptions import OpenFacebookException
+from open_facebook.utils import send_warning, validate_is_instance
+
 from django_facebook import settings as facebook_settings, signals
 from django_facebook.exceptions import FacebookException
 from django_facebook.utils import get_user_model, mass_get_or_create, \
     cleanup_oauth_url, get_profile_model, parse_signed_request, hash_key, \
     try_get_profile, get_user_attribute
-from open_facebook import exceptions as open_facebook_exceptions
-from open_facebook.exceptions import OpenFacebookException
-from open_facebook.utils import send_warning, validate_is_instance
-import datetime
-import json
-import logging
+
 try:
     from dateutil.parser import parse as parse_date
 except ImportError:
     from django_facebook.utils import parse_like_datetime as parse_date
-
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +56,14 @@ def get_persistent_graph(request, *args, **kwargs):
     '''
     from open_facebook.api import OpenFacebook
     if not request:
-        raise(ValidationError,
-              'Request is required if you want to use persistent tokens')
+        raise (ValidationError,
+               'Request is required if you want to use persistent tokens')
 
     graph = None
     # some situations like an expired access token require us to refresh our
     # graph
     require_refresh = False
-    code = request.REQUEST.get('code')
+    code = request.GET.get('code')
     if code:
         require_refresh = True
 
@@ -111,8 +113,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     on the same page
     '''
     # this is not a production flow, but very handy for testing
-    if not access_token and request.REQUEST.get('access_token'):
-        access_token = request.REQUEST['access_token']
+    if not access_token and request.GET.get('access_token'):
+        access_token = request.GET['access_token']
     # should drop query params be included in the open facebook api,
     # maybe, weird this...
     from open_facebook import OpenFacebook, FacebookAuthorization
@@ -126,7 +128,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     # parse the signed request if we have it
     signed_data = None
     if request:
-        signed_request_string = request.REQUEST.get('signed_data')
+        signed_request_string = request.GET.get('signed_data')
         if signed_request_string:
             logger.info('Got signed data from facebook')
             signed_data = parse_signed_request(signed_request_string)
@@ -139,7 +141,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
 
     if not access_token:
         # easy case, code is in the get
-        code = request.REQUEST.get('code')
+        code = request.GET.get('code')
         if code:
             logger.info('Got code from the request data')
 
@@ -251,7 +253,6 @@ def _add_current_user_id(graph, user):
 
 
 class FacebookUserConverter(object):
-
     '''
     This conversion class helps you to convert Facebook users to Django users
 
@@ -325,7 +326,7 @@ class FacebookUserConverter(object):
 
         user_data['username'] = cls._retrieve_facebook_username(user_data)
         user_data['password2'], user_data['password1'] = (
-            cls._generate_fake_password(),) * 2  # same as double equal
+                                                             cls._generate_fake_password(),) * 2  # same as double equal
 
         facebook_map = dict(birthday='date_of_birth',
                             about='about_me', id='facebook_id')
