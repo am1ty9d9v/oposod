@@ -11,8 +11,8 @@ urlpatterns = [
     url(r'', include('home.urls')),
 
     # url(r'^search-oposod/', include('haystack.urls')),
-    # url(r'^facebook/', include('django_facebook.urls')),
-    # url(r'^accounts/', include('django_facebook.auth_urls')),
+    url(r'^facebook/', include('django_facebook.urls')),
+    url(r'^accounts/', include('django_facebook.auth_urls')),
     url(r'', include('users.urls')),
 
 ]
