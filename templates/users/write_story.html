@@ -11,53 +11,73 @@
 </div>
 {% endif %}
 
-		
-<script src="{{STATIC_URL}}js/jquery.dd.min.js" type="text/javascript"></script>
-<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}styles/dd.css" />
-<script language="javascript"> $(document).ready(function(e) {try {$("body select").msDropDown(); } catch(e) {alert(e.message); } }); </script> 
 
-<script> $(function() {$( "#datepicker" ).datepicker({changeMonth: true, changeYear: true, maxDate: "+0D", yearRange: "{{year_of_birth}}:{% now "Y" %}", dateFormat: "yy-mm-dd"}); });</script>
+<script src="{{STATIC_URL}}js/jquery.dd.min.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}styles/dd.css"/>
+<script language="javascript"> $(document).ready(function(e) {try {$("body select").msDropDown(); } catch(e) {alert(e.message); } }); </script>
+
+<script>
+    $(function() {$( "#datepicker" ).datepicker({changeMonth: true, changeYear: true, maxDate: "+0D", yearRange: "{{year_of_birth}}:{% now "Y" %}", dateFormat: "yy-mm-dd"}); });</script>
 
 <style type="text/css">
 	#writes_story_form {width: 700px; margin: 0 auto; } #writes_story_form textarea {width: 589px; height: 200px; font-size: 30px; font-family: 'Alegreya', serif; padding: 10px; line-height: 1.2em; border: 10px solid #ddd; margin-top: 10px; } #writes_story_form input[type=text]#id_heading {font-size: 20px; height: 20px; font-family: 'Ubuntu', serif; padding: 10px; border: 10px solid #ddd; } #writes_story_form ul.errorlist li {margin-top: 20px; margin-bottom: 20px; } input[type=text]#datepicker {width: 60px; font-size: 11px; height: 10px; margin-top: -5px; } #save_story {float: right; } button#save_story {width: 100px; } #xx {margin-left: 250px; margin-top: -20px; } 
 </style>
 
-<iframe  height="500px" width="100%" id="upload_frame" name="upload_frame" src="{% url 'upload_new_story' %}" scrolling="no"></iframe>
+<iframe height="500px" width="100%" id="upload_frame" name="upload_frame" src="{% url 'upload_new_story' %}" scrolling="no"></iframe>
 
-<div class="myform" id="draggable" >
-	<div id="up-pr"></div>
-	<form id='writes_story_form' action="{% url 'write_story' %}" method="post">
-		{% csrf_token %}
-		{{write_story_form.as_p}}
-		<div style="height:45px;width:609px;border-radius:4px;margin:0 auto;margin-left:-0px;border:10px solid #ddd;background:#fff;">
-			<div title="Hold and drag me" style="cursor:pointer;width: 300px;float:left;clear:both;">
+<div class="myform" id="draggable">
+    <div id="up-pr"></div>
+    <form id='writes_story_form' action="{% url 'write_story' %}" method="post">
+        {% csrf_token %}
+        {{write_story_form.as_p}}
+        <div style="height:45px;width:609px;border-radius:4px;margin:0 auto;margin-left:-0px;border:10px solid #ddd;background:#fff;">
+            <div title="Hold and drag me" style="cursor:pointer;width: 300px;float:left;clear:both;">
 				<span style="width:60px;float:left;clear:both;margin-top:12px;margin-left:10px;">
 					<input type="text" id="datepicker" name="datepicker" placeholder="Select date"/>
 				</span>
 
-				<span style="width:200px;float:right;margin-top:12px;">
+                <span style="width:200px;float:right;margin-top:12px;">
 					<span style="width: 80px;float:left;clear:both;"> :Public <input id="public" name="public" type="radio" checked="checked" value="1"/></span>
 					
-					<span style="width:80px;float:right;"> :Private <input  name="public" type="radio" value="0"/></span>
+					<span style="width:80px;float:right;"> :Private <input name="public" type="radio" value="0"/></span>
 				</span>
-			</div>
-			<div style="width:300px;float:right;;margin-top:3px;">
-				<select name="moods" style="float:left;width:150px;clear:both">
-					<option value="">Choose Mood</option> <option value="">-----------------</option> <option value="Attitude" data-image="{{STATIC_URL}}images/moods_30x30/Attitude.png">Attitude</option> <option value="Awesome" data-image="{{STATIC_URL}}images/moods_30x30/Awesome.png">Awesome</option> <option value="Embarressed" data-image="{{STATIC_URL}}images/moods_30x30/Embarressed.png">Embarressed</option> <option value="Ewww" data-image="{{STATIC_URL}}images/moods_30x30/Ewww.png">Ewww</option> <option value="Flirtatious" data-image="{{STATIC_URL}}images/moods_30x30/Flirtatious.png">Flirtatious</option> <option value="Foodie" data-image="{{STATIC_URL}}images/moods_30x30/Foodie.png">Foodie</option> <option value="High" data-image="{{STATIC_URL}}images/moods_30x30/High.png">High</option> <option value="In_Love" data-image="{{STATIC_URL}}images/moods_30x30/In_Love.png">In Love</option> <option value="LOL" data-image="{{STATIC_URL}}images/moods_30x30/LOL.png">LOL</option> <option value="Muaaaaah" data-image="{{STATIC_URL}}images/moods_30x30/Muaaaaah.png">Muaaaaah</option> <option value="Naughty" data-image="{{STATIC_URL}}images/moods_30x30/Naughty.png">Naughty</option> <option value="OMG" data-image="{{STATIC_URL}}images/moods_30x30/OMG.png">OMG</option> <option value="Oopss" data-image="{{STATIC_URL}}images/moods_30x30/Oopss.png">Oopss</option> <option value="Pissed" data-image="{{STATIC_URL}}images/moods_30x30/Pissed.png">Pissed</option> <option value="Tipsy" data-image="{{STATIC_URL}}images/moods_30x30/Tipsy.png">Tipsy</option> <option value="Upset" data-image="{{STATIC_URL}}images/moods_30x30/Upset.png">Upset</option> <option value="Winky" data-image="{{STATIC_URL}}images/moods_30x30/Winky.png">Winky</option> <option value="WTF" data-image="{{STATIC_URL}}images/moods_30x30/WTF.png">WTF</option>
-				</select>
+            </div>
+            <div style="width:300px;float:right;;margin-top:3px;">
+                <select name="moods" style="float:left;width:150px;clear:both">
+                    <option value="">Choose Mood</option>
+                    <option value="">-----------------</option>
+                    <option value="Attitude" data-image="{{STATIC_URL}}images/moods_30x30/Attitude.png">Attitude</option>
+                    <option value="Awesome" data-image="{{STATIC_URL}}images/moods_30x30/Awesome.png">Awesome</option>
+                    <option value="Embarressed" data-image="{{STATIC_URL}}images/moods_30x30/Embarressed.png">Embarressed</option>
+                    <option value="Ewww" data-image="{{STATIC_URL}}images/moods_30x30/Ewww.png">Ewww</option>
+                    <option value="Flirtatious" data-image="{{STATIC_URL}}images/moods_30x30/Flirtatious.png">Flirtatious</option>
+                    <option value="Foodie" data-image="{{STATIC_URL}}images/moods_30x30/Foodie.png">Foodie</option>
+                    <option value="High" data-image="{{STATIC_URL}}images/moods_30x30/High.png">High</option>
+                    <option value="In_Love" data-image="{{STATIC_URL}}images/moods_30x30/In_Love.png">In Love</option>
+                    <option value="LOL" data-image="{{STATIC_URL}}images/moods_30x30/LOL.png">LOL</option>
+                    <option value="Muaaaaah" data-image="{{STATIC_URL}}images/moods_30x30/Muaaaaah.png">Muaaaaah</option>
+                    <option value="Naughty" data-image="{{STATIC_URL}}images/moods_30x30/Naughty.png">Naughty</option>
+                    <option value="OMG" data-image="{{STATIC_URL}}images/moods_30x30/OMG.png">OMG</option>
+                    <option value="Oopss" data-image="{{STATIC_URL}}images/moods_30x30/Oopss.png">Oopss</option>
+                    <option value="Pissed" data-image="{{STATIC_URL}}images/moods_30x30/Pissed.png">Pissed</option>
+                    <option value="Tipsy" data-image="{{STATIC_URL}}images/moods_30x30/Tipsy.png">Tipsy</option>
+                    <option value="Upset" data-image="{{STATIC_URL}}images/moods_30x30/Upset.png">Upset</option>
+                    <option value="Winky" data-image="{{STATIC_URL}}images/moods_30x30/Winky.png">Winky</option>
+                    <option value="WTF" data-image="{{STATIC_URL}}images/moods_30x30/WTF.png">WTF</option>
+                </select>
 
-				<button style="width:100px;float:right;;margin-top:4px;margin-right:4px;" class="btn primary" id="save_story" type="submit">
-					Save
-				</button>
-			</div>
-		</div>
-		
-		<div id="id_for_photo"></div>
-	</form>
+                <button style="width:100px;float:right;;margin-top:4px;margin-right:4px;" class="btn primary" id="save_story" type="submit">
+                    Save
+                </button>
+            </div>
+        </div>
+
+        <div id="id_for_photo"></div>
+    </form>
 </div>
 
 <div id="dialog-confirm" title="Warning!!!">
-	<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>You have already uploaded a public photo on this date.</p>
+    <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>You have already uploaded a public photo on this date.</p>
 </div>
 
 
@@ -205,18 +225,19 @@
 			});
 		});	
 	});
+
 </script>
 
 <script>
-	
+
 
 </script>
 <noscript>
-	<div style="position: fixed; top: 0px; left: 0px; z-index: 3000;
+    <div style="position: fixed; top: 0px; left: 0px; z-index: 3000;
 	height: 100%; width: 100%; background-color: #FFFFFF">
-		<p style="margin-left: 10px">
-			It seems you have your javascript disabled. Please enable to load this page.
-		</p>
-	</div>
+        <p style="margin-left: 10px">
+            It seems you have your javascript disabled. Please enable to load this page.
+        </p>
+    </div>
 </noscript>
 {% endblock %} 

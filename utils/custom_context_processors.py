@@ -21,6 +21,7 @@ def settings_variable(request):
     return {
         'SITE': settings.SITE,
         'STATIC_URL': settings.STATIC_URL,
+        'MEDIA_URL': settings.MEDIA_URL,
     }
 
 

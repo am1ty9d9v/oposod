@@ -531,7 +531,7 @@ def write_status(request):
         if form.is_valid():
             status = form.cleaned_data['status']
             Status.objects.create(user=request.user, status=status)
-            return HttpResponseRedirect(reverse('users.views.profile', args=(request.user.username,)))
+            return HttpResponseRedirect(reverse('profile', args=(request.user.username,)))
     else:
         form = WriteStatusForm()
 
