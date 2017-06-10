@@ -86,7 +86,7 @@ def signup(request):
 
         messages.info(request,
                       'You have successfully registered, please activate your account from your email before signing in.')
-        return HttpResponseRedirect(reverse('accounts.views.signin'))
+        return HttpResponseRedirect(reverse('signin'))
 
     return render(request, 'accounts/signup.html', {
         'form': form,
