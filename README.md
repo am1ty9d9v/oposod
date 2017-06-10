@@ -7,8 +7,3 @@ A django hobby project made in just 14 days
 
 
 Link: http://oposod.amityadav.in
-
-Replace djorm_expressions.models SortedDict with OrderedDict
-copy these two in main directory only and reomve from requirements.txt file
-django_facebook
-djorm
