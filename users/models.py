@@ -8,7 +8,7 @@ from djorm_expressions.models import ExpressionManager
 from djorm_pgarray.fields import ArrayField
 from image_cropping.fields import ImageRatioField, ImageCropField
 
-from oposod.settings import MEDIA_ROOT
+from django.conf import settings
 
 
 class Profile(models.Model):
@@ -108,7 +108,7 @@ class DailyPhoto(models.Model):
                 return key
 
     def get_absolute_url(self):
-        return "%s/%s" % (MEDIA_ROOT, self.photo_path)
+        return "%s/%s" % (settings.MEDIA_ROOT, self.photo_path)
 
     def __unicode__(self):
         return unicode(self.photo_path)

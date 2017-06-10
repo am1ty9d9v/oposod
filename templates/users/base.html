@@ -1,8 +1,8 @@
 <!DOCTYPE html>
+{% load static from staticfiles %}
 {% load current_time %}
 {% load bootstrap_toolkit %}
 {% load cropping %}
-{% load url from future %}
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:og="http://ogp.me/ns#"
       xmlns:fb="https://www.facebook.com/2008/fbml">  
@@ -14,11 +14,11 @@
 		<title>OPOSOD</title>
 		<meta name="description" content="">
 		<meta name="author" content="Amit Yadav">
-		<link rel="shortcut icon" href="{{STATIC_URL}}images/favicon.png" type="image/png"/>
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="image/png"/>
 
 		<!-- JAVASCRIPT  -->
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-		<script type="text/javascript" src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
         <script src="{{STATIC_URL}}js/autobahn.min.js"></script>
 		<script src="http://www.jquery4u.com/demos/infinite-scrolling-demo1/js/jquery.masonry.min.js"></script>
@@ -59,7 +59,6 @@
 	<body>
 
 		<div class="container-fluid">
-			{% bootstrap_messages %}
 
 		<div style="margin-bottom:100px;margin-top:10px;">
                 {% block content %}Empty page{% endblock %}
@@ -196,6 +195,7 @@
 <script>
 var sess = null;
 
+/*
 window.onload = function() {
     var wsuri;
     if (window.location.protocol === "file:") {wsuri = "ws://localhost:9000"}
@@ -210,6 +210,7 @@ window.onload = function() {
         }
     );
 };
+*/
 
 function onEvent(topic, event) {
     switch (topic) {

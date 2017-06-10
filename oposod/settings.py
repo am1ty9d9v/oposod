@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     # 'haystack',
     # 'south',
@@ -82,7 +83,7 @@ TEMPLATES = [
                 'utils.custom_context_processors.settings_variable',
                 'utils.custom_context_processors.friends_list',
                 'django_facebook.context_processors.facebook',
-                'django.core.context_processors.tz',
+                # 'django.core.context_processors.tz',
             ],
         },
     },

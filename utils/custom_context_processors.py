@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
-#from django.shortcuts import get_object_or_404
-from users.models import FriendRequest
+
 from oposod import settings
+from users.models import FriendRequest
 
 
 def new_friend_request_count(request):
@@ -20,6 +20,7 @@ def new_friend_request_count(request):
 def settings_variable(request):
     return {
         'SITE': settings.SITE,
+        'STATIC_URL': settings.STATIC_URL,
     }
 
 
