@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'djorm_expressions',
     'django_facebook',
     # 'open_facebook',
-
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -198,13 +198,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL = '/media/'
+# MEDIA_URL = '/media/'
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -219,6 +219,39 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(BASE_DIR, 'static'),
 )
+
+# That will tell boto that when it uploads files to S3,
+# it should set properties on them so that when S3 serves them,
+# it'll include those HTTP headers in the response.
+# Those HTTP headers in turn will tell browsers that they can cache these files for a very long time.
+AWS_HEADERS = {  # see http://developer.yahoo.com/performance/rules.html#expires
+    'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
+    'Cache-Control': 'max-age=94608000',
+}
+
+AWS_HOST_NAME = 's3.ap-south-1.amazonaws.com'
+AWS_STORAGE_BUCKET_NAME = 'amityadav'
+AWS_ACCESS_KEY_ID = 'AKIAIC6J4U55M66CM4CQ'
+AWS_SECRET_ACCESS_KEY = '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'
+
+# Tell django-storages that when coming up with the URL for an item in S3 storage, keep
+# it simple - just use this domain plus the path. (If this isn't set, things get complicated).
+# This controls how the `static` template tag from `staticfiles` gets expanded, if you're using it.
+# We also use it in the next setting.
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
+STATICFILES_LOCATION = 'static'
+STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+# This is used by the `static` template tag from `static`, if you're using that. Or if anything else
+# refers directly to STATIC_URL. So it's safest to always set it.
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+
+# Tell the staticfiles app to use S3Boto storage when writing the collected static files (when
+# you run `collectstatic`).
+MEDIAFILES_LOCATION = 'media'
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+
 
 if os.getenv("MODE", "PROD"):
     from prod_settings import *

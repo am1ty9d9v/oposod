@@ -24,3 +24,5 @@ redis
 wsgiref
 zope.interface
 #django-facebook
+django-storages
+boto

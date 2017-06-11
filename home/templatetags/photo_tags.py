@@ -73,7 +73,7 @@ class PhotoCalendar(HTMLCalendar):
                     body.append('<span style="position:relative;"><span \
                             class="dayid" style="position:absolute;opacity:0;margin-top:40px;margin-left:40px;">%s</span>' % (day))
                     body.append('''
-                        <a class='group3' href='/%s/daily-photo/lightbox/%s'><img title="%s" src="%s/%s_100x100" /><a/>''' %
+                        <a class='group3' href='/%s/daily-photo/lightbox/%s'><img title="%s" src="%s%s_100x100" /><a/>''' %
                         (photo.user.username, photo.key,photo.heading,  settings.MEDIA_URL, photo.photo))
                     # body.append(esc(photo.series.primary_name))
                     body.append('</span>')
