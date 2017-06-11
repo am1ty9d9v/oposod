@@ -23,6 +23,6 @@ python-memcached
 redis
 wsgiref
 zope.interface
-#django-facebook
+django-facebook
 django-storages
 boto
