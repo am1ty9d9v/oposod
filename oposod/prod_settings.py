@@ -1,4 +1,5 @@
 import os
+DEBUG = False
 AWS_HOST_NAME = 's3.ap-south-1.amazonaws.com'
 AWS_STORAGE_BUCKET_NAME = 'oposod-prod'
 AWS_ACCESS_KEY_ID = os.getenv("AWSAccessKeyId")
