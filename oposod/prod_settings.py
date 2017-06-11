@@ -1,8 +1,8 @@
 import os
 AWS_HOST_NAME = 's3.ap-south-1.amazonaws.com'
 AWS_STORAGE_BUCKET_NAME = 'oposod-prod'
-AWS_ACCESS_KEY_ID = 'AKIAJX5WBA2T6CUNJWGA'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = os.getenv("AWSAccessKeyId")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWSSecretKey")
 
 # Tell django-storages that when coming up with the URL for an item in S3 storage, keep
 # it simple - just use this domain plus the path. (If this isn't set, things get complicated).
