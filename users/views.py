@@ -150,7 +150,7 @@ def edit_profile_photo(request, image_id=None):
             profile_photo_obj.save()
 
             # resizing with ratio maintained.
-            misc.image_resize(MEDIA_ROOT + '/' + str(profile_photo_obj.profile_photo), '280x280', maintain_ratio=True)
+            # misc.image_resize(MEDIA_ROOT + '/' + str(profile_photo_obj.profile_photo), '280x280', maintain_ratio=True)
 
             return HttpResponseRedirect(reverse('edit_profile_photo', args=(profile_photo_obj.key,)))
 
@@ -872,7 +872,7 @@ def edit_privacy_settings(request):
                 who_can_like_photos=who_can_like_photos,
             )
             messages.info(request, 'Your privacy settings is changed.')
-            return HttpResponseRedirect(reverse('users.views.edit_privacy_settings'))
+            return HttpResponseRedirect(reverse('edit_privacy_settings'))
 
     else:
         form = EditPrivacyForm(initial={

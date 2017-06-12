@@ -28,8 +28,17 @@ class Status(models.Model):
 
 
 class ProfilePhoto(models.Model):
+
+    def get_upload_path(self, filename):
+        try:
+            ext = filename.rsplit('.', -1)[-1]
+        except:
+            ext = 'jpg'
+        filename = "%s.%s" % (uuid.uuid4(), ext)
+        return os.path.join(self.profile_photo.url, filename)
+
     user = models.ForeignKey(User, null=True)
-    profile_photo = models.ImageField(upload_to='profile_photo/')
+    profile_photo = models.ImageField(upload_to=get_upload_path)
     cropping = ImageRatioField('profile_photo', '220x196')
     uploaded_on = models.DateTimeField(null=True)
     is_set = models.BooleanField(default=False)

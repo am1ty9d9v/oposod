@@ -94,7 +94,7 @@
                         {% if profile_photo_obj %}
                             {% for profilephoto in user_obj.profilephoto_set.all %}
                                         {% if profilephoto.is_set %}
-                                            <img class="" style="" src="{% cropped_thumbnail profilephoto 'cropping' %}">
+                                            <img class="" style="" src="{% cropped_thumbnail profilephoto 'cropping' width=100  %}">
                                         {% endif %}
                             {% endfor %}
                         {% else %}

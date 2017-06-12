@@ -5,6 +5,6 @@ if not settings.DEBUG:
     class StaticStorage(S3BotoStorage):
         location = settings.STATICFILES_LOCATION
 
-
-class MediaStorage(S3BotoStorage):
-    location = settings.MEDIAFILES_LOCATION
+if not settings.DEBUG:
+    class MediaStorage(S3BotoStorage):
+        location = settings.MEDIAFILES_LOCATION
