@@ -1,5 +1,4 @@
 
-{% load cropping %}
 
 <script> $(document).ready(function(){$(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", trapFocus:true,width:"85%", height:"100%"}); }); </script>
 <style type="text/css">
@@ -76,9 +75,9 @@
                     <div class="story-container">
                         <div class="photo">
 
-                            <a class="group3" title="{{dailyphoto.heading}}" href="{% url 'browse_daily_photo_single_lightbox' dailyphoto.user.username dailyphoto.key %}"><img src="{{MEDIA_URL}}{{dailyphoto.photo}}_200x160"></a>
-
-
+                            <a class="group3" title="{{dailyphoto.heading}}" href="{% url 'browse_daily_photo_single_lightbox' dailyphoto.user.username dailyphoto.key %}">
+                                <img src="{{ dailyphoto.daily_photo_200x200.url }}">
+                            </a>
                         </div>
 
                         <div class="story" style="margin-right:30px;">

@@ -37,7 +37,6 @@ class ProfilePhoto(models.Model):
             ext = 'jpg'
         filename = "%s.%s" % (uuid.uuid4(), ext)
         profile_photo_url = os.path.join("profile_photo", "amityadav", filename)
-        print '1: Profile photo url from models.py: ', profile_photo_url
         return profile_photo_url
 
     user = models.ForeignKey(User, null=True)
@@ -101,11 +100,12 @@ class DailyPhoto(models.Model):
 
     def get_upload_path(self, filename):
         try:
-            ext = filename.split('.')[-1]
+            ext = filename.rsplit('.', -1)[-1]
         except:
             ext = 'jpg'
         filename = "%s.%s" % (uuid.uuid4(), ext)
-        return os.path.join(self.photo_path, filename)
+        daily_photo_url = os.path.join("daily_photo", "amityadav", filename)
+        return daily_photo_url
 
     photo = models.ImageField(upload_to=get_upload_path)
     moods = models.CharField(max_length=20, null=True)
@@ -120,6 +120,13 @@ class DailyPhoto(models.Model):
     daily_photo_100x100 = ImageSpecField(
         source='photo',
         processors=[ResizeToFill(100, 100)],
+        format='JPEG',
+        options={'quality': 90}
+    )
+
+    daily_photo_200x200 = ImageSpecField(
+        source='photo',
+        processors=[ResizeToFill(200, 200)],
         format='JPEG',
         options={'quality': 90}
     )

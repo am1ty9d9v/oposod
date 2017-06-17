@@ -45,7 +45,7 @@ function favorBrightExcludeWhite(r,g,b) {
        {% for id, i in sorted_dp_dict %}
           <div id="box_{{i.id}}" class="box col3" style="position:relative;">
             <a class="group3" href="{% url 'browse_daily_photo_single_lightbox' i.user.username i.key %}">
-                <img id="image_{{i.id}}" title="{{i.heading}}" src="{{MEDIA_URL}}{{i.photo}}_280" />
+                <img id="image_{{i.id}}" title="{{i.heading}}" src="{{ i.daily_photo_200x200.url }}" />
             </a>
             <p id="id_story_con_{{i.id}}" style="background:#555557;font-size:10px;padding: 10px 4px 4px 4px;text-align:justify;color:#fff;">
                 {{i.story|striptags|truncatewords:20|truncatechars:100}}

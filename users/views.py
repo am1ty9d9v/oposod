@@ -247,25 +247,7 @@ def upload_new_story(request):
             dp_obj.photo_path = 'dailyphoto/%s' % request.user.username
             dp_obj.key = dp_obj.key_generate
             dp_obj.save()
-            try:
-                # save a progressive image of the original and update db entry.
-                dp_obj.photo = misc.save_progressive_image(dp_obj.photo)
-                dp_obj.save()
-
-                # Code to generate more diff diff
-                # sizes of the uploaded photo
-                for size in IMAGE_SIZE_DAILY_PHOTO:
-                    misc.image_resize(MEDIA_ROOT + '/' + str(dp_obj.photo), size, )
-
-                # resizing with ratio maintained.
-                misc.image_resize(MEDIA_ROOT + '/' + str(dp_obj.photo), '280x280', maintain_ratio=True)
-            except Exception, e:
-                print 'ERROR IN UPLOADING DAILY PHOTO, %s' % e
-                # dp_obj.delete()
-                # messages.error(request, 'Please select only images file')
-                # form = UploadNewStoryForm()
-            return HttpResponseRedirect(
-                reverse('uploading_finished', args=(dp_obj.id,)))
+            return HttpResponseRedirect(reverse('uploading_finished', args=(dp_obj.id,)))
     else:
         form = UploadNewStoryForm()
     return render(request, 'users/upload_new_story.html', {

@@ -1,5 +1,3 @@
-{% load cropping %}
-
 {% if dailyphoto_obj_all %}
 
 <script>$(document).ready(function(){$(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});});</script>
@@ -13,7 +11,7 @@
         {% for i in dailyphoto_obj_all %}
           <div id="box_{{i.id}}" class="box col3" style="position:relative;">
             <a class="group3" href="{% url 'browse_daily_photo_single_lightbox' i.user.username i.key %}">
-                <img id="image_{{i.id}}" title="{{i.heading}}" src="{{MEDIA_URL}}{{i.photo}}_280" />
+                <img id="image_{{i.id}}" title="{{i.heading}}" src="{{ i.daily_photo_200x200.url }}" />
             </a>
             <p id="id_story_con_{{i.id}}" style="background:#fff;font-size:10px;padding: 10px 4px 4px 4px;text-align:justify;color:#fff;">
                 {{i.story|striptags|truncatewords:20|truncatechars:100}}

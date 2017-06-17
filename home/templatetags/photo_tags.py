@@ -1,14 +1,16 @@
 """
 Calendar template tag
 """
-from home.calendar import HTMLCalendar
-from django import template
 from datetime import date
 from itertools import groupby
+
+from django import template
 from django.conf import settings
-from django.utils.html import conditional_escape as esc
+
+from home.calendar import HTMLCalendar
 
 register = template.Library()
+
 
 def do_photo_calendar(parser, token):
     """
@@ -71,10 +73,11 @@ class PhotoCalendar(HTMLCalendar):
                 body = ['<span>']
                 for photo in self.photos[day]:
                     body.append('<span style="position:relative;"><span \
-                            class="dayid" style="position:absolute;opacity:0;margin-top:40px;margin-left:40px;">%s</span>' % (day))
+                            class="dayid" style="position:absolute;opacity:0;margin-top:40px;margin-left:40px;">%s</span>' % (
+                    day))
                     body.append('''
-                        <a class='group3' href='/%s/daily-photo/lightbox/%s'><img title="%s" src="%s%s_100x100" /><a/>''' %
-                        (photo.user.username, photo.key,photo.heading,  settings.MEDIA_URL, photo.photo))
+                        <a class='group3' href='/%s/daily-photo/lightbox/%s'><img title="%s" src="%s" /><a/>''' %
+                                (photo.user.username, photo.key, photo.heading, photo.daily_photo_100x100.url))
                     # body.append(esc(photo.series.primary_name))
                     body.append('</span>')
                 body.append('</span>')
@@ -94,6 +97,7 @@ class PhotoCalendar(HTMLCalendar):
 
     def day_cell(self, cssclass, body):
         return '<td class="%s">%s</td>' % (cssclass, body)
+
 
 # REGISTER the template tag so it is available to templates
 register.tag("photo_calendar", do_photo_calendar)
