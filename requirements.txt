@@ -9,7 +9,6 @@ distribute
 django-extensions
 django-haystack
 django-hstore
-django-image-cropping
 djorm-ext-core
 djorm-ext-expressions
 #djorm-ext-pgarray

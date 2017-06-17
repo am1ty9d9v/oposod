@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import urllib
 
 import logging
 
@@ -7,12 +8,14 @@ from django.contrib.admin.templatetags import admin_static
 from django.contrib.admin.widgets import AdminFileWidget, ForeignKeyRawIdWidget
 from django.db.models import ObjectDoesNotExist
 
+from oposod.s3utils import s3_upload_file
 from .config import settings
 from .utils import get_backend
 
 try:
     # Django >= 1.9
     from django.apps import apps
+
     get_model = apps.get_model
 except ImportError:
     from django.db.models import get_model
@@ -26,10 +29,19 @@ def thumbnail_url(image_path):
         'upscale': True,
         'size': settings.IMAGE_CROPPING_THUMB_SIZE,
     }
-    return get_backend().get_thumbnail_url(image_path, thumbnail_options)
+    # This is not saving on s3
+    url = get_backend().get_thumbnail_url(image_path, thumbnail_options)
+    # So I have upload the generated thumbnail from upper line to S3
+    my_file = url.split("/", 4)[-1]
+    my_file = urllib.unquote(my_file).decode('utf8')
+    from_file = settings.MEDIA_ROOT + "/" + my_file
+    to_key = settings.MEDIAFILES_LOCATION + "/" + my_file
+    s3_upload_file(from_file=from_file, to_key=to_key, acl="public-read")
+    return url
 
 
 def get_attrs(image, name):
+    print 'widget: ', image, name, image.url
     try:
         # TODO test case
         try:
@@ -66,7 +78,6 @@ def get_attrs(image, name):
 
 
 class CropWidget(object):
-
     def _media(self):
         js = [
             "image_cropping/js/jquery.Jcrop.min.js",

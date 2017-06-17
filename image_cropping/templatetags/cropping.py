@@ -3,11 +3,11 @@ import urllib
 from django import template
 from django.conf import settings
 
+from oposod.s3utils import s3_upload_file
 from ..utils import get_backend
 
 register = template.Library()
 VALID_OPTIONS = ('scale', 'width', 'height', 'max_size')
-from utils.s3utils import s3_upload_file
 
 
 @register.simple_tag(takes_context=True)
