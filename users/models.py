@@ -116,6 +116,14 @@ class DailyPhoto(models.Model):
     is_public = models.BooleanField(default=False)
     key = models.CharField(max_length=90)
 
+    # Imagekit sizes
+    daily_photo_100x100 = ImageSpecField(
+        source='photo',
+        processors=[ResizeToFill(100, 100)],
+        format='JPEG',
+        options={'quality': 90}
+    )
+
     @property
     def key_generate(self):
         """returns a string based unique key with length 80 chars"""

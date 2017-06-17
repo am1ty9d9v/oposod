@@ -184,7 +184,7 @@
 
                     {% for profilephoto in user.profilephoto_set.all %}
                     {% if profilephoto.is_set %}
-                    <img style="width:23px;height:22px;margin-left:6.7px;" src="{% cropped_thumbnail profilephoto 'cropping' %}">
+                    <img style="width:23px;height:22px;margin-left:6.7px;" src="{% cropped_thumbnail profilephoto 'cropping' width=23%}">
                     {% endif %}
                     {% endfor %}
 
