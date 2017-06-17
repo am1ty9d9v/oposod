@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'users',
     'accounts',
     'home',
+    'imagekit',
     'image_cropping',
     'easy_thumbnails',
     'django_extensions',

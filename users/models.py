@@ -1,14 +1,16 @@
-import os
-import uuid
 import random
+import uuid
 
+import os
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from image_cropping.fields import ImageRatioField
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill
+
 from djorm_expressions.models import ExpressionManager
 from djorm_pgarray.fields import ArrayField
-from image_cropping.fields import ImageRatioField, ImageCropField
-
-from django.conf import settings
 
 
 class Profile(models.Model):
@@ -28,21 +30,29 @@ class Status(models.Model):
 
 
 class ProfilePhoto(models.Model):
-
     def get_upload_path(self, filename):
         try:
             ext = filename.rsplit('.', -1)[-1]
         except:
             ext = 'jpg'
         filename = "%s.%s" % (uuid.uuid4(), ext)
-        return os.path.join(self.profile_photo.url, filename)
+        profile_photo_url = os.path.join("profile_photo", "amityadav", filename)
+        print '1: Profile photo url from models.py: ', profile_photo_url
+        return profile_photo_url
 
     user = models.ForeignKey(User, null=True)
-    profile_photo = models.ImageField(upload_to=get_upload_path)
+    profile_photo = models.ImageField(max_length=2000, upload_to=get_upload_path)
     cropping = ImageRatioField('profile_photo', '220x196')
     uploaded_on = models.DateTimeField(null=True)
     is_set = models.BooleanField(default=False)
     key = models.CharField(max_length=90)
+
+    profile_photo_100x50 = ImageSpecField(
+        source='profile_photo',
+        processors=[ResizeToFill(100, 50)],
+        format='JPEG',
+        options={'quality': 90}
+    )
 
     @property
     def key_generate(self):

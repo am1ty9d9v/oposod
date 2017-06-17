@@ -19,6 +19,7 @@ ipython
 pep8
 psycopg2
 pyflakes
+django-imagekit
 python-memcached
 redis
 wsgiref

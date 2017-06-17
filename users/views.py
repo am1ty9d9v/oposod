@@ -148,12 +148,7 @@ def edit_profile_photo(request, image_id=None):
             profile_photo_obj.uploaded_on = datetime.datetime.now()
             profile_photo_obj.key = profile_photo_obj.key_generate
             profile_photo_obj.save()
-
-            # resizing with ratio maintained.
-            # misc.image_resize(MEDIA_ROOT + '/' + str(profile_photo_obj.profile_photo), '280x280', maintain_ratio=True)
-
             return HttpResponseRedirect(reverse('edit_profile_photo', args=(profile_photo_obj.key,)))
-
     return render(request, 'users/edit_profile_photo.html', {
         'form': form,
         'profile_photo_obj': profile_photo_obj,

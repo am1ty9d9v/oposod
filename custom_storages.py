@@ -5,6 +5,9 @@ if not settings.DEBUG:
     class StaticStorage(S3BotoStorage):
         location = settings.STATICFILES_LOCATION
 
-if not settings.DEBUG:
-    class MediaStorage(S3BotoStorage):
-        location = settings.MEDIAFILES_LOCATION
+
+class MediaStorage(S3BotoStorage):
+    location = settings.MEDIAFILES_LOCATION
+
+    def _normalize_name(self, name):
+        return settings.MEDIAFILES_LOCATION + "/" + name
