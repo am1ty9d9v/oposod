@@ -1,4 +1,5 @@
 import urllib
+
 from django import template
 from django.conf import settings
 
@@ -97,7 +98,7 @@ def cropped_thumbnail(context, instance, ratiofieldname, **kwargs):
         my_file = url.split("/", 4)[-1]
         my_file = urllib.unquote(my_file).decode('utf8')
         from_file = settings.MEDIA_ROOT + "/" + my_file
-        to_key=settings.MEDIAFILES_LOCATION + "/" + my_file
+        to_key = settings.MEDIAFILES_LOCATION + "/" + my_file
         s3_upload_file(from_file=from_file, to_key=to_key, acl="public-read")
 
     except backend.exceptions_to_catch:
