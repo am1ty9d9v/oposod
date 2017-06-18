@@ -20,9 +20,10 @@
     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 
     <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
     <script src="{{STATIC_URL}}js/autobahn.min.js"></script>
     <script src="http://www.jquery4u.com/demos/infinite-scrolling-demo1/js/jquery.masonry.min.js"></script>
-    <script src="/static/js/jquery.raty.js"></script>
+    <script src="{{ STATIC_URL }}js/jquery.raty.js"></script>
     <script src="{{STATIC_URL}}js/jquery.colorbox-min.js"></script>
     <script src="{{STATIC_URL}}js/jquery.malsup.form.js"></script>
 
@@ -95,7 +96,7 @@
 
 
                 <li>
-                    <form action="/search-oposod/" method="GET">
+                    <form action="/serch-oposod/" method="GET">
                         <input name="q" id="search" style="width:200px;" type="text" placeholder="Search Oposod..."/>
                     </form>
                 </li>
