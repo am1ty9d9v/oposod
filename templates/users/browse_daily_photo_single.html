@@ -63,7 +63,7 @@
 
                 <div title="Affections" id="likes-rating{{dailyphoto_obj_single.id}}" style="margin-top:20px;"></div>
 
-                <script type="text/javascript"> $('#likes-rating{{dailyphoto_obj_single.id}}').raty({starOff: '/static/images/likes_off.png', starOn : '/static/images/likes_on.png', targetKeep: true, hints: [], score: {{ score|get_id:dailyphoto_obj_single.id }}, click: function(score, evt) {$.post('/set-rating/',{score:score, dayphotoID:{{dailyphoto_obj_single.id}} }); var current_val = {{likes_count}} - {{ score|get_id:dailyphoto_obj_single.id }} + score; $('#likes-total').text(current_val); } });
+                <script type="text/javascript"> $('#likes-rating{{dailyphoto_obj_single.id}}').raty({starOff: '{{STATIC_URL}}images/likes_off.png', starOn : '{{STATIC_URL}}images/likes_on.png', targetKeep: true, hints: [], score: {{ score|get_id:dailyphoto_obj_single.id }}, click: function(score, evt) {$.post('/set-rating/',{score:score, dayphotoID:{{dailyphoto_obj_single.id}} }); var current_val = {{likes_count}} - {{ score|get_id:dailyphoto_obj_single.id }} + score; $('#likes-total').text(current_val); } });
                 </script> 
             </span>
           
