@@ -23,6 +23,7 @@ python-memcached
 redis
 wsgiref
 zope.interface
-django-facebook
+#django-facebook
+git+git://github.com/tschellenbach/Django-facebook.git
 django-storages
 boto
