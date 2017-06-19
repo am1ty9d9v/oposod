@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'djorm_pgarray',
     'djorm_expressions',
     'django_facebook',
-    # 'open_facebook',
+    'open_facebook',
     'storages',
 ]
 
@@ -75,6 +75,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django_facebook.context_processors.facebook',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -83,7 +84,6 @@ TEMPLATES = [
                 "utils.custom_context_processors.new_friend_request_count",
                 'utils.custom_context_processors.settings_variable',
                 'utils.custom_context_processors.friends_list',
-                'django_facebook.context_processors.facebook',
                 # 'django.core.context_processors.tz',
             ],
         },
