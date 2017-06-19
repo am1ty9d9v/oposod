@@ -234,20 +234,15 @@ LOGGING = {
         'request_handler': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/tmp/test_django_request.log',
+            'filename': '/tmp/oposod_django_request.log',
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
             'formatter': 'verbose',
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'communications.log.IBAdminEmailHandler'
-        },
     },
     'loggers': {
         'django.request': {
-            'handlers': ['request_handler', 'mail_admins'],
+            'handlers': ['request_handler'],
             'level': 'ERROR',
             'propagate': True
         },
