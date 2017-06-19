@@ -188,8 +188,6 @@ LOGGING = {
     }
 }
 
-FACEBOOK_APP_ID = '12121212'
-FACEBOOK_APP_SECRET = 'adafas'
 EMAIL_HOST_USER = ""
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
