@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^403$', TemplateView.as_view(template_name='403.html')),
     url(r'^req-fb$', TemplateView.as_view(template_name='req.html')),
     url(r'^help$', TemplateView.as_view(template_name='help.html')),
+    url(r'^privacy-policy$', TemplateView.as_view(template_name='privacy_policy.html')),
     url(r'^edit/cover-photo/$', edit_cover_photo, name='edit_cover_photo'),
     url(r'^edit/profile-photo/(?P<image_id>\d+)$', edit_profile_photo,
         name='edit_profile_photo'),
