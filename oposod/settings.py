@@ -201,7 +201,7 @@ STATICFILES_DIRS = (
 # it should set properties on them so that when S3 serves them,
 # it'll include those HTTP headers in the response.
 # Those HTTP headers in turn will tell browsers that they can cache these files for a very long time.
-GGING = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {
