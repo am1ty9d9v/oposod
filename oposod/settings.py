@@ -265,6 +265,8 @@ AWS_HEADERS = {  # see http://developer.yahoo.com/performance/rules.html#expires
     'Cache-Control': 'max-age=94608000',
 }
 
+FACEBOOK_DEFAULT_SCOPE = ['email']
+
 
 if os.getenv("MODE") == "PROD":
     from prod_settings import *
