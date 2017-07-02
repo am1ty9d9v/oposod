@@ -46,3 +46,6 @@ static/build-css/
 .tscache/
 .idea/
 .reviewboardrc
+node_modules
+node_modules/*
+package-lock.json
