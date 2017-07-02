@@ -14,7 +14,7 @@ from djorm_pgarray.fields import ArrayField
 
 
 class Profile(models.Model):
-    user = models.ForeignKey(User)
+    user = models.OneToOneField(User)
     sex = models.CharField(max_length=1)
     dob = models.DateField(null=True)
     city = models.CharField(max_length=99, null=True)

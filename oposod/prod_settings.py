@@ -37,3 +37,4 @@ DATABASES = {
 
 FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.getenv('FACEBOOK_APP_SECRET')
+SITE = "http://oposod.amityadav.in/"

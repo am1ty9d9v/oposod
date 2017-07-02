@@ -1,21 +1,9 @@
-{% extends 'users/base.html'%}
-{% block content%}
+{% extends 'base.html'%}
 {% load photo_tags %}
 {% load cropping %}
 
-<script>
-    $(document).ready(function(){
-        $(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});
-
-    });
-</script>
-
+{% block extra_css %}
 <style type="text/css">
-        .cal-con {
-            width: 960px;
-            margin: 0 auto;
-
-        }
 
         select {
             width: 150px;
@@ -43,6 +31,8 @@
 
         th {
             background: #ddd;
+            font-size:16px;
+            text-align:center;
         }
         ul li {
             list-style: none;
@@ -53,40 +43,30 @@
 
         }
 </style>
+{% endblock extra_css %}
 
-<script>
-      $(document).ready(function() {
-        $(".dayid").hover(function() {
-          //$(".dayid").css("opacity" ='1');
-        });
-      });
-</script>
-
-<body>
+{% block content%}
 <div style="width: 700px;margin:0 auto;">
-    <div style="width: 500px;float:left;clear:both;">
-        <form action="" method="post">
+    <div style="">
+        <form class="form-inline" action="" method="post">
             {% csrf_token %}
-            <select class="selectpicker" name="month" data-style="btn" data-width="20%">
+            <select class="custom-select mb-2 mr-sm-2 mb-sm-0" name="month" data-style="btn" data-width="20%">
                 {% for month in month_name_list %}
                 <option>{{month}}</option>
                 {% endfor %}
             </select>
 
-            <select class="selectpicker" name="year" data-style="btn" data-size="5" data-width="15%">
+            <select class="custom-select mb-2 mr-sm-2 mb-sm-0" name="year" data-style="btn" data-size="5" data-width="15%">
                 {% for year in year_list %}
                 <option>{{year}}</option>
                 {% endfor %}
             </select>
-            <button type="submit" style="margin-top: -10px;" class="btn btn-primary">Show</button>
+            <button type="submit" style="" class="btn btn-info">Show </button>
+            <div class="ml-auto">
+                <a class="btn btn-primary" href="/{{username}}/photo-calendar/{{previous_year}}/{{previous_month}}">{{previous_month_name}}</a>
+                <a class="btn btn-success" href="/{{username}}/photo-calendar/{{next_year}}/{{next_month}}">{{next_month_name}}</a>
+            </div>
         </form>
-    </div>
-
-    <div class='pagination'>
-        <ul>
-            <li><a href="/{{username}}/photo-calendar/{{previous_year}}/{{previous_month}}">{{previous_month_name}}</a></li>
-            <li><a href="/{{username}}/photo-calendar/{{next_year}}/{{next_month}}">{{next_month_name}}</a></li>
-        </ul>
     </div>
 </div>
 
@@ -96,3 +76,19 @@
 </div>
 
 {% endblock%}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function(){
+        $(".group3").colorbox({rel:'group3', fixed:true, scrolling:true,preloading:true, transition:"none", width:"85%", height:"100%"});
+    });
+</script>
+
+<script>
+      $(document).ready(function() {
+        $(".dayid").hover(function() {
+          //$(".dayid").css("opacity" ='1');
+        });
+      });
+</script>
+{% endblock %}

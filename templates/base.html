@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+{% load static from staticfiles %}
+{% load current_time %}
+{% load bootstrap_toolkit %}
+{% load cropping %}
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8">
+    {% block head-extras%}
+        <meta name="description" content="">
+        <meta name="author" content="">
+    {% endblock%}
+    <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="image/png" />
+    <title>
+        {% block title %} {% endblock title %} OPOSOD
+    </title>
+
+    <style>
+        body {
+            padding-bottom: 100px;
+
+            {% if cover_photo_obj %}
+                background: #d8d8d1 url('{{MEDIA_URL}}{{cover_photo_obj.cover_photo }}') no-repeat center center fixed;
+                -webkit-background-size: cover;
+                -moz-background-size: cover;
+                -o-background-size: cover;
+                background-size: cover;
+            {% else %}
+                background: #fff;
+            {% endif %}
+        }
+    </style>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="{% static 'fonts/fa/css/font-awesome.min.css' %}">
+    <link href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}styles/style.css">
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}styles/images.css">
+    <link href='http://fonts.googleapis.com/css?family=Alegreya' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Imprima' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu">
+    <link rel="stylesheet" href="{{STATIC_URL}}styles/colorbox.css" />
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'styles/offcanvas.css' %}" rel="stylesheet">
+    {% block extra_css %}
+    {% endblock extra_css %}
+</head>
+
+<body>
+    <nav class="navbar navbar-toggleable-md fixed-bottom navbar-light bg-faded">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="{% url 'write_story' %}">
+            OPOSOD
+            <span class="fa fa-upload"></span>
+        </a>
+
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <form action="/serch-oposod/" class="form-inline my-2 my-lg-0" method="GET">
+                <input id="search" class="form-control mr-sm-2" type="text" name="q" placeholder="Search">
+            </form>
+            <ul class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="fa fa-calendar nav-link" href="{% url 'calendar' user.username %}"> Calendar</a>
+                    </li>
+                    <li class="nav-item dropup">
+                        <a class="nav-link fa fa-cogs dropdown-toggle" href="{{ SITE }}" id="dropdown01"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Settings
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown01">
+                            <h6 class="dropdown-header">Profile</h6>
+                            <a class="dropdown-item" href="{% url 'edit_profile' %}">Edit profile</a>
+                            <a class="dropdown-item" href="{% url 'edit_cover_photo' %}">Edit cover photo</a>
+                            <a class="dropdown-item" href="/edit/profile-photo/{% for i in user.profilephoto_set.all %}{% if i.is_set %}{{i.key}}{% endif %}{% endfor %}">Edit profile photo</a>
+                            <a class="dropdown-item" href="{% url 'change_password' %}">Change password</a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header">Settings</h6>
+                            <a class="dropdown-item" href="{% url 'edit_privacy_settings' %}">Edit Privacy Settings</a>
+                            <a class="dropdown-item" href="{% url 'facebook_settings' %}">Facebook Settings</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'signout' %}">Signout</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fa fa-home" href="/"> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if user.profile.sex == 'm' %} fa fa-male {% else %} fa fa-female {% endif %}" href="/{{user.username}}"> {{user.first_name|title}} {{user.last_name|title}}</a>
+                    </li>
+                {% else %}
+                    <li style="margin-top:8px;"><a href="{% url 'join_us' %}"><span class="button green">Join us</span> to explore more.</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %} {% endblock content %}
+        <hr>
+
+        <footer>
+            <p>&copy; OPOSOD - <a href="http://amityadav.in">Amit Yadav</a> {% now 'Y' %}</p>
+        </footer>
+    </div>
+    <!--/.container-->
+
+    <!-- Bootstrap core JavaScript
+    Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'jquery/dist/jquery.slim.min.js' %}"></script>
+    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script src="{% static 'tether/dist/js/tether.min.js' %}"></script>
+    <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script src="{{STATIC_URL}}js/autobahn.min.js"></script>
+    <script src="http://www.jquery4u.com/demos/infinite-scrolling-demo1/js/jquery.masonry.min.js"></script>
+    <script src="{{ STATIC_URL }}js/jquery.raty.js"></script>
+    <script src="{{STATIC_URL}}js/jquery.colorbox-min.js"></script>
+    <script src="{{STATIC_URL}}js/jquery.malsup.form.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="{% static 'js/ie10-viewport-bug-workaround.js' %}"></script>
+    {% block extra_js %} {% endblock extra_js %}
+</body>
+
+</html>

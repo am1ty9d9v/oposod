@@ -788,3 +788,9 @@ code .nd { color: #9FAD7E; } /* CSS pseudo selector */
   right: 0;
   padding: 5px 8px;
 }
+
+.nav-link {
+    margin: 10px;
+    font-size: 15px;
+}
+

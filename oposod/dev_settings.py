@@ -24,3 +24,4 @@ MEDIAFILES_LOCATION = 'media'
 MEDIA_URL = "http://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 # MEDIA_URL = "/media/"
 DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+SITE = "http://localhost:9090/"
